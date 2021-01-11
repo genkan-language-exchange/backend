@@ -1,0 +1,12 @@
+/node_modules
+
+config.env
+*.env
+
+.eslintrc.json
+
+.vscode
+
+.prettierrc
+
+package-lock.json
