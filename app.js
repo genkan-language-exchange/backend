@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const morgan = require('morgan');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
@@ -6,17 +7,23 @@ const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp');
-
+const bodyParser = require('body-parser');
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
 const userRouter = require('./routes/userRoutes');
+const session = require('express-session');
+const MongoStore = require('connect-mongo')(session);
+const passport = require('passport');
+
+// passport config
+require('./passport')(passport);
 
 const app = express();
 
 // security
 app.use(helmet());
 
-// 1) GLOBAL MIDDLEWARE
+// global middleware
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
@@ -57,8 +64,52 @@ app.use((req, res, next) => {
   next();
 });
 
-// 3) ROUTES
+const DB = process.env.DATABASE.replace('<PASSWORD>', process.env.DATABASE_PASSWORD);
+
+const dbOptions = {
+  useNewUrlParser: true,
+  useCreateIndex: true,
+  useFindAndModify: false,
+  useUnifiedTopology: true
+};
+
+const connection = mongoose
+  .connect(DB, dbOptions)
+  .then(() => console.log('DB connection success'));
+
+// session
+const sessionStore = new MongoStore({
+  mongooseConnect: connection,
+  collection: 'sessions',
+  url: DB,
+});
+
+const sessionConfig = {
+  name: 'session',
+  secret: process.env.SESSION_SECRET || 'keepitsecretkeepitsafe',
+  resave: true,
+  saveUninitialized: true,
+  cookie: {
+    maxAge: process.env.COOKIE_AGE || 1000 * 60 * 60, // 1 hour for dev
+  },
+  store: sessionStore,
+};
+
+app.use(session(sessionConfig));
+
+// passport
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.use(express.urlencoded({ extended: false }));
+
+// routes
 app.use('/api/v1/users', userRouter);
+
+app.get('/', (req, res) => {
+  res.status(200)
+  .json({ data: req.session })
+})
 
 // route fallback
 app.all('*', (req, res, next) => {
