@@ -13,15 +13,11 @@ exports.signup = catchAsync(async (req, res, next) => {
     name: req.body.name,
     email: req.body.email,
     password: req.body.password,
-    passwordConfirm: req.body.passwordConfirm
+    passwordConfirm: req.body.passwordConfirm,
+    sid: req.sessionID, // TODO: add this on email confirmation
   });
 
   if (!newUser) return next(new AppError('Could not create user', 500));
-
-  passport.authenticate('local', (err) => {
-    if (err) return next(new AppError(err, 401));
-    next();
-  })(req, res, next);
 
   res.status(201).json({
     status: 'success',
@@ -44,11 +40,8 @@ exports.login = catchAsync(async (req, res, next) => {
 
   if (!user) return next(new AppError('Check your credentials', 401));
 
-  // passport checks the password and sends a cookie
-  passport.authenticate('local', (err) => {
-    if (err) return next(new AppError(err, 401));
-    next();
-  })(req, res, next);
+  user.sid = req.sessionID;
+  await user.save({ validateBeforeSave: false });
 
   res.status(200).json({
     status: 'success',
@@ -59,6 +52,12 @@ exports.login = catchAsync(async (req, res, next) => {
 });
 
 exports.logout = catchAsync(async (req, res, next) => {
+  const user = await User.findOne({ sid: req.sessionID }).select('+password');
+  if (!user) return next(new AppError('Already logged out', 404));
+  
+  user.sid = undefined;
+  await user.save({ validateBeforeSave: false });
+
   req.logout();
   req.session.destroy(err => {
     if (err) return next(new AppError('Unable to log out at this time', 500));
