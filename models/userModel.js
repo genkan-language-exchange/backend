@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, 'A user must have a name'],
     lowercase: true,
+    validate: [validator.isAlphanumeric, 'Letters and numbers only please'],
   },
   email: {
     type: String,
@@ -35,7 +36,6 @@ const userSchema = new mongoose.Schema({
     minlength: 8,
     maxlength: 999,
     validate: {
-      // this only runs on CREATE and SAVE, not update
       validator: function(value) {
         return value === this.password;
       },
@@ -51,6 +51,30 @@ const userSchema = new mongoose.Schema({
     select: false,
   },
   sid: String,
+  matchSettings: {
+    accountCreated: { // user can block new accounts made within up to 1 month from sending message
+      type: Date,
+      default: Date.now(),
+    },
+    age: Number, // allow 16 but only show to 18 under
+    birthday: { // set age with this
+      type: Date,
+      default: Date.now(),
+    },
+    gender: {
+      type: String,
+      enum: ['female', 'male', 'transgender'],
+      required: true,
+    },
+    allowedGenders: { // user can block genders
+      type: Array,
+      default: ['female', 'male', 'transgender'],
+    },
+    nationality: String,
+    residence: String, // user can block people in same country
+    languageKnow: Array, // user can block anyone who doesn't know their target language
+    languageLearn: Array,
+  }
 });
 
 // MIDDLEWARE
