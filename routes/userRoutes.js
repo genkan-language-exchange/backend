@@ -12,10 +12,10 @@ router.get('/logout', passport.authenticate('local'), authController.logout);
 router.post('/forgotPassword', authController.forgottenPassword);
 router.patch('/resetPassword/:token', authController.resetPassword);
 
-router.patch('/updatePassword', authController.protect, authController.updatePassword);
+router.patch('/updatePassword', passport.authenticate('local'), authController.updatePassword);
 
-router.patch('/updateMe', authController.protect, userController.updateMe);
-router.delete('/deleteMe', authController.protect, userController.deleteMe);
+router.patch('/updateMe', passport.authenticate('local'), userController.updateMe);
+router.delete('/deleteMe', passport.authenticate('local'), userController.deleteMe);
 
 router
   .route('/')
