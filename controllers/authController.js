@@ -14,8 +14,9 @@ exports.signup = catchAsync(async (req, res, next) => {
     email: req.body.email,
     password: req.body.password,
     passwordConfirm: req.body.passwordConfirm,
+    matchSettings: req.body.matchSettings,
     sid: req.sessionID, // TODO: add this on email confirmation
-  });
+  })
 
   if (!newUser) return next(new AppError('Could not create user', 500));
 
@@ -36,7 +37,7 @@ exports.login = catchAsync(async (req, res, next) => {
   }
 
   // check if user exists
-  const user = await User.findOne({ email }).select('+password');
+  const user = await User.findOne({ email }).select('+password +sid');
 
   if (!user) return next(new AppError('Check your credentials', 401));
 
@@ -52,7 +53,7 @@ exports.login = catchAsync(async (req, res, next) => {
 });
 
 exports.logout = catchAsync(async (req, res, next) => {
-  const user = await User.findOne({ sid: req.sessionID }).select('+password');
+  const user = await User.findOne({ sid: req.sessionID }).select('+password +sid');
   if (!user) return next(new AppError('Already logged out', 404));
   
   user.sid = undefined;
@@ -157,4 +158,40 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
 
   // 4) send a new JWT
   createSendToken(user, 200, res);
+});
+
+exports.confirmAccountCreation = catchAsync(async (req, res, next) => { // TODO
+  // 1) get user based on POSTed email
+  const user = await User.findOne({ email: req.body.email });
+  if (!user) return next(new AppError('User not found', 404));
+
+  // 2) generate a random reset token
+  const resetToken = user.createPasswordResetToken();
+  // save token and token expiration to user
+  // disable MongoDB validators so we can save without a password
+  await user.save({ validateBeforeSave: false });
+
+  // 3) send email with token to user
+  const resetURL = `${req.protocol}://${req.get('host')}/api/v1/users/resetPassword/${resetToken}`;
+
+  const message = `Click this link to finalise the creation of your account: ${resetURL}\n You can ignore this email if you did not create an account with us.`;
+
+  try {
+    await sendEmail({
+      email: user.email,
+      subject: 'Password Reset Request (valid for 60 minutes!)',
+      text: message,
+    });
+  
+    res.status(200).json({
+      status: 'success',
+      message: 'Request sent successfully'
+    })
+  } catch (err) {
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save({ validateBeforeSave: false });
+
+    return next(new AppError('Could not send password reset email', 500));
+  }
 });

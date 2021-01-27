@@ -50,7 +50,10 @@ const userSchema = new mongoose.Schema({
     default: true,
     select: false,
   },
-  sid: String,
+  sid: {
+    type: String,
+    select: false,
+  },
   matchSettings: {
     accountCreated: { // user can block new accounts made within up to 1 month from sending message
       type: Date,

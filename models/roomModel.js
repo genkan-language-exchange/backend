@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const User = require('./userModel');
+const AppError = require('../utils/appError');
 
 const roomSchema = new mongoose.Schema({
   members: [
@@ -9,10 +10,23 @@ const roomSchema = new mongoose.Schema({
       required: [true, 'A chatroom must have at least 1 member'],
     },
   ], // end of members
+  messagePermission: {
+    approver: {
+      type: mongoose.Schema.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+    status: {
+      type: String,
+      enum: ['pending', 'approved', 'shadow', 'blocked'],
+      default: 'pending'
+    }
+  },
   messages: [
     {
       from: {
-        type: String,
+        type: mongoose.Schema.ObjectId,
+        ref: 'User',
         required: [true, 'A message must contain a user id'],
       },
       message: {
