@@ -16,7 +16,7 @@ exports.signup = catchAsync(async (req, res, next) => {
     passwordConfirm: req.body.passwordConfirm,
     matchSettings: req.body.matchSettings,
     sid: req.sessionID, // TODO: add this on email confirmation
-  });
+  })
 
   if (!newUser) return next(new AppError('Could not create user', 500));
 
@@ -37,7 +37,7 @@ exports.login = catchAsync(async (req, res, next) => {
   }
 
   // check if user exists
-  const user = await User.findOne({ email }).select('+password');
+  const user = await User.findOne({ email }).select('+password +sid');
 
   if (!user) return next(new AppError('Check your credentials', 401));
 
@@ -53,7 +53,7 @@ exports.login = catchAsync(async (req, res, next) => {
 });
 
 exports.logout = catchAsync(async (req, res, next) => {
-  const user = await User.findOne({ sid: req.sessionID }).select('+password');
+  const user = await User.findOne({ sid: req.sessionID }).select('+password +sid');
   if (!user) return next(new AppError('Already logged out', 404));
   
   user.sid = undefined;
