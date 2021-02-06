@@ -7,25 +7,26 @@ const router = express.Router();
 
 router.post('/signup', authController.signup);
 router.post('/login', passport.authenticate('local'), authController.login);
-router.get('/logout', passport.authenticate('local'), authController.logout);
+router.get('/logout', authController.logout);
 
 router.post('/forgotPassword', authController.forgottenPassword);
 router.patch('/resetPassword/:token', authController.resetPassword);
 
-router.patch('/updatePassword', passport.authenticate('local'), authController.updatePassword);
+router.patch('/updatePassword', authController.updatePassword);
 
-router.patch('/updateMe', passport.authenticate('local'), userController.updateMe);
-router.delete('/deleteMe', passport.authenticate('local'), userController.deleteMe);
+router.patch('/validation/:token', authController.verifyAccount);
+router.post('/revalidate', authController.resendValidationEmail);
+
+router.patch('/updateMe', userController.updateMe);
+router.delete('/deleteMe', userController.deleteMe);
 
 router
   .route('/')
+  .post(userController.getUser)
   .get(userController.getAllUsers)
-  // .post(userController.createUser);
 
 router
   .route('/:id')
   .get(userController.getUser)
-  .patch(userController.updateUser)
-  .delete(userController.deleteUser);
 
 module.exports = router;

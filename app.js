@@ -7,13 +7,16 @@ const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp');
-const bodyParser = require('body-parser');
+// const bodyParser = require('body-parser');
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
-const userRouter = require('./routes/userRoutes');
+
 const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
 const passport = require('passport');
+
+const userRouter = require('./routes/userRoutes');
+const roomRouter = require('./routes/roomRoutes');
 
 // passport config
 require('./passport')(passport);
@@ -31,7 +34,7 @@ if (process.env.NODE_ENV === 'development') {
 // request rate limiting
 const limiter = rateLimit({
   max: 100,
-  windowMs: 1000 * 60 * 60,
+  windowMs: 1000 * 60 * 60, // 1 hour
   message: 'Too many requests.'
 });
 app.use('/api', limiter);
@@ -105,6 +108,7 @@ app.use(express.urlencoded({ extended: false }));
 
 // routes
 app.use('/api/v1/users', userRouter);
+app.use('/api/v1/rooms', roomRouter);
 
 app.get('/', (req, res) => {
   res.status(200)
