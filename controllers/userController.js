@@ -1,7 +1,7 @@
 const User = require('../models/userModel');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
-const factory = require('.//factory');
+const factory = require('./factory');
 
 const filterBody = (obj, ...allowedFields) => {
 
@@ -14,7 +14,7 @@ const filterBody = (obj, ...allowedFields) => {
   return newObj;
 };
 
-exports.getUser = catchAsync(async (req, res) => {
+exports.getUser = catchAsync(async (req, res, next) => {
   let user;
   if (req.params.id) {
     user = await User.findById(req.params.id).select('+accountStatus'); 
@@ -26,10 +26,11 @@ exports.getUser = catchAsync(async (req, res) => {
 
     user = await User.find(filter).select('+accountStatus');
   }
-  
-  if (!user || user.accountStatus === 'inactive') return new AppError('User not found', 404);
 
-  if (user.accountStatus === 'banned') return new AppError('User is banned', 404);
+  console.log(user);
+  
+  if (!user || user?.accountStatus === 'inactive') return next(new AppError('User not found', 404));
+  if (user.accountStatus === 'banned') return next(new AppError('User is banned', 404));
 
   res.status(200).json({
     status: 'success',
@@ -37,10 +38,10 @@ exports.getUser = catchAsync(async (req, res) => {
   });
 });
 
-exports.getAllUsers = catchAsync(async (req, res) => {
+exports.getAllUsers = catchAsync(async (req, res, next) => {
   const users = await User.find().select('-__v');
 
-  if (!users.length) return new AppError('No users found :(', 404);
+  if (!users.length) return next(new AppError('No users found :(', 404));
 
   res.status(200).json({
     status: 'success',

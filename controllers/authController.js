@@ -117,7 +117,8 @@ exports.logout = catchAsync(async (req, res, next) => {
 });
 
 exports.protect = catchAsync(async (req, _, next) => {
-  if (!req.isAuthenticated()) return next(new AppError('You have been logged out, please log in again', 403));
+  // TODO: better protection lol
+  if (!req.sessionID) return next(new AppError('You have been logged out, please log in again', 403));
   next();
 });
 
