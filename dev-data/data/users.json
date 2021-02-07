@@ -1,0 +1,128 @@
+[
+  {
+    "name":"japaneseUser",
+    "email":"japanese@test.com",
+    "identifier": "0101",
+    "password":"password",
+    "passwordConfirm":"password",
+    "accountStatus": "verified",
+    "matchSettings": {
+      "age": 20,
+      "birthday": "2000-11-30",
+      "gender": "male",
+      "pronouns": "he/him",
+      "languageKnow": ["Japanese"],
+      "languageLearn": ["English"],
+      "nationality": "JP",
+      "residence": "Japan"
+    }
+  },
+  {
+    "name":"koreanUser",
+    "email":"korean@test.com",
+    "identifier": "1905",
+    "password":"password",
+    "passwordConfirm":"password",
+    "accountStatus": "verified",
+    "matchSettings": {
+      "age": 30,
+      "birthday": "1990-3-21",
+      "gender": "female",
+      "pronouns": "she/her",
+      "languageKnow": ["Korean"],
+      "languageLearn": ["English"],
+      "nationality": "KR",
+      "residence": "South Korea"
+    }
+  },
+  {
+    "name":"americanUser",
+    "email":"america@test.com",
+    "identifier": "1776",
+    "password":"password",
+    "passwordConfirm":"password",
+    "accountStatus": "verified",
+    "matchSettings": {
+      "age": 19,
+      "birthday": "2001-4-15",
+      "gender": "male",
+      "pronouns": "he/him",
+      "languageKnow": ["English"],
+      "languageLearn": ["Spanish"],
+      "nationality": "US",
+      "residence": "USA"
+    }
+  },
+  {
+    "name":"underageUser",
+    "email":"minor@test.com",
+    "identifier": "0023",
+    "password":"password",
+    "passwordConfirm":"password",
+    "accountStatus": "verified",
+    "matchSettings": {
+      "age": 9,
+      "birthday": "2011-6-1",
+      "gender": "male",
+      "pronouns": "he/him",
+      "languageKnow": ["English"],
+      "languageLearn": ["Japanese"],
+      "nationality": "CA",
+      "residence": "Canada"
+    }
+  },
+  {
+    "name":"transUser",
+    "email":"lgbtq@test.com",
+    "identifier": "1337",
+    "password":"password",
+    "passwordConfirm":"password",
+    "accountStatus": "verified",
+    "matchSettings": {
+      "age": 21,
+      "birthday": "2000-1-1",
+      "gender": "transgender",
+      "pronouns": "they/them",
+      "languageKnow": ["English"],
+      "languageLearn": ["Japanese"],
+      "nationality": "US",
+      "residence": "USA"
+    }
+  },
+  {
+    "name":"bannedUser",
+    "email":"baddy@test.com",
+    "identifier": "1223",
+    "password":"password",
+    "passwordConfirm":"password",
+    "accountStatus": "banned",
+    "matchSettings": {
+      "age": 32,
+      "birthday": "1988-3-15",
+      "gender": "male",
+      "pronouns": "he/him",
+      "languageKnow": ["English"],
+      "languageLearn": ["French"],
+      "nationality": "UK",
+      "residence": "England"
+    }
+  },
+  {
+    "name":"newUser",
+    "email":"newbie@test.com",
+    "identifier": "6969",
+    "password":"password",
+    "passwordConfirm":"password",
+    "accountStatus": "pending",
+    "matchSettings": {
+      "age": 45,
+      "birthday": "1975-6-12",
+      "gender": "male",
+      "pronouns": "he/him",
+      "languageKnow": ["French"],
+      "languageLearn": ["German"],
+      "nationality": "FR",
+      "residence": "France"
+    }
+  }
+]

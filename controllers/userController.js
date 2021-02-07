@@ -1,6 +1,7 @@
 const User = require('../models/userModel');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
+const factory = require('./factory');
 
 const filterBody = (obj, ...allowedFields) => {
 
@@ -13,8 +14,34 @@ const filterBody = (obj, ...allowedFields) => {
   return newObj;
 };
 
-exports.getAllUsers = catchAsync(async (req, res) => {
-  const users = await User.find();
+exports.getUser = catchAsync(async (req, res, next) => {
+  let user;
+  if (req.params.id) {
+    user = await User.findById(req.params.id).select('+accountStatus'); 
+  } else {
+    const filter = {
+      name: req.body.name,
+      identifier: req.body.identifier
+    };
+
+    user = await User.find(filter).select('+accountStatus');
+  }
+
+  console.log(user);
+  
+  if (!user || user?.accountStatus === 'inactive') return next(new AppError('User not found', 404));
+  if (user.accountStatus === 'banned') return next(new AppError('User is banned', 404));
+
+  res.status(200).json({
+    status: 'success',
+    data: user,
+  });
+});
+
+exports.getAllUsers = catchAsync(async (req, res, next) => {
+  const users = await User.find().select('-__v');
+
+  if (!users.length) return next(new AppError('No users found :(', 404));
 
   res.status(200).json({
     status: 'success',
@@ -26,11 +53,11 @@ exports.getAllUsers = catchAsync(async (req, res) => {
 });
 
 exports.updateMe = async (req, res, next) => {
-  // 1) create error if user POSTs password ata
+  // 1) create error if user POSTs password
   if (req.body.password || req.body.passwordConfirm) return next(new AppError('Wrong route for password updating', 400));
 
   // 2) clean the request
-  const filteredBody = filterObj(req.body, 'name', 'email');
+  const filteredBody = filterBody(req.body, 'name', 'email', 'allowedGenders', 'gender', 'pronouns', 'nationality', 'residence', 'languageKnow', 'languageLearn');
 
   // 3) prepare options
   const options = {
@@ -49,8 +76,12 @@ exports.updateMe = async (req, res, next) => {
   });
 };
 
-exports.deleteMe = catchAsync(async (req, res, next) => {
-  await User.findByIdAndUpdate(req.user.id, { active: false });
+exports.deleteMe = catchAsync(async (req, res) => {
+  await User.findByIdAndUpdate(req.user.id, {
+    setInactiveDate: Date.now(),
+    accountStatus: 'inactive',
+    active: false,
+  });
 
   res.status(204).json({
     status: 'success',
@@ -58,21 +89,24 @@ exports.deleteMe = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.getUser = (req, res) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'This route is not yet defined!'
+exports.reviveMe = catchAsync(async (req, res) => {
+  const userId = req.user.id;
+  const isValidUser = await User.findById(userId);
+  if (!isValidUser.length) return new AppError('User not found', 404);
+  if (isValidUser.accountStatus === 'banned') return new AppError(`User account is ${status}`, 400);
+  
+  const user = await User.findByIdAndUpdate(userId, {
+    setInactiveDate: undefined,
+    active: true,
   });
-};
-exports.updateUser = (req, res) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'This route is not yet defined!'
+
+  res.status(200).json({
+    status: 'success',
+    data: user,
   });
-};
-exports.deleteUser = (req, res) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'This route is not yet defined!'
-  });
-};
+})
+
+/* ADMIN ONLY */
+// Do NOT update passwords with this!
+exports.updateUser = factory.updateOne(User);
+exports.deleteUser = factory.deleteOne(User);

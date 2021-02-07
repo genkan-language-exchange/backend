@@ -1,31 +1,80 @@
-const { promisify } = require('util');
 const crypto = require('crypto');
-const jwt = require('jsonwebtoken');
-const passport = require('passport');
+const moment = require('moment');
 
 const User = require('../models/userModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const sendEmail = require('../utils/email');
+const getIdentifier = require('../utils/identifier');
 
 exports.signup = catchAsync(async (req, res, next) => {
+  const { name, email } = req.body;
+
+  // check for existing email
+  const userExists = await User.find({ email });
+  if (userExists.length > 0) return next(new AppError('Pre-existing user found', 400));
+
+  // check for available 4 digit identifying number
+  const usersByName = await User.find({ name });
+  let usedIdentifiers = [];
+  for (let user of usersByName)
+    usedIdentifiers.push(user.identifier);
+  let identifier;
+
+  try {
+    identifier = getIdentifier(usedIdentifiers);
+  } catch (error) {
+    return next(new AppError(error, 400));
+  }
+
+  // create validation token
+  const token = crypto.randomBytes(32).toString('hex');
+  const validationToken = crypto.createHash('sha256').update(token).digest('hex');
+  
+  // set user age
+  const age = moment(req.body.matchSettings.birthday, 'YYYYMMDD').fromNow();
+  req.body.matchSettings.age = age.split(' ')[0];
+
+  // create the user
   const newUser = await User.create({
-    name: req.body.name,
-    email: req.body.email,
+    name,
+    email,
+    identifier,
     password: req.body.password,
     passwordConfirm: req.body.passwordConfirm,
     matchSettings: req.body.matchSettings,
-    sid: req.sessionID, // TODO: add this on email confirmation
-  })
+    validationToken,
+    validationExpires: Date.now() + (30 * 60 * 1000),
+    sid: req.sessionID,
+  });
 
   if (!newUser) return next(new AppError('Could not create user', 500));
 
-  res.status(201).json({
-    status: 'success',
-    data: {
-      newUser,
-    },
-  });
+  // send account validation email
+  const validationURL = `${req.protocol}://${req.get('host')}/api/v1/users/validation/${validationToken}`;
+
+  const message = `Click this link to finalise the creation of your account: ${validationURL}\n You can ignore this email if you did not create an account with us.`;
+
+  try {
+    await sendEmail({
+      email,
+      subject: 'Confirm Your Genkan Account!',
+      text: message,
+    });
+  
+    res.status(201).json({
+      status: 'success',
+      data: {
+        newUser,
+      },
+    });
+  } catch (err) {
+    newUser.validationToken = undefined;
+    newUser.validationExpires = undefined;
+    await newUser.save({ validateBeforeSave: false });
+
+    return next(new AppError('Could not send verification email', 500));
+  }
 });
 
 exports.login = catchAsync(async (req, res, next) => {
@@ -67,21 +116,27 @@ exports.logout = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.protect = catchAsync(async (req, res, next) => {
-  if (!req.isAuthenticated()) return next(new AppError('You have been logged out, please log in again', 403));
+exports.protect = catchAsync(async (req, _, next) => {
+  // TODO: better protection lol
+  if (!req.sessionID) return next(new AppError('You have been logged out, please log in again', 403));
   next();
 });
 
 exports.restrictTo = (...roles) => {
-  // roles ['admin']
-  return (req, res, next) => {
-    // req.user.roles is available when we use the protect middleware before this one
-    if (!roles.includes(req.user.roles)) {
+  // roles ['user', 'vip', 'admin']
+  return (req, _, next) => {
+    if (!roles.includes(req.user.role)) {
       return next(new AppError('User does not have permission to do that', 403));
     }
     next();
   }
 }
+
+/*
+  ********************
+  PASSWORD UPDATING
+  ********************
+*/
 
 exports.forgottenPassword = catchAsync(async (req, res, next) => {
   // 1) get user based on POSTed email
@@ -120,11 +175,8 @@ exports.forgottenPassword = catchAsync(async (req, res, next) => {
 });
 
 exports.resetPassword = catchAsync(async (req, res, next) => {
-  // 1) get user from token
-  const hashedToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
-
   const user = await User.findOne({
-    passwordResetToken: hashedToken,
+    passwordResetToken: req.params.token,
     passwordResetExpires: {$gt: Date.now()}
   });
 
@@ -136,12 +188,10 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   user.passwordResetExpires = undefined;
 
   await user.save();
-
-  // 3) update passwordCreatedAt property for user
-  // happens in middleware on user model
-
-  // 4) log the user in (send new JWT)
-  createSendToken(user, 200, res);
+  res.status(200).json({
+    message: 'success',
+    data: null,
+  });
 });
 
 exports.updatePassword = catchAsync(async (req, res, next) => {
@@ -155,31 +205,40 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   user.password = req.body.passwordNew;
   user.passwordConfirm = req.body.passwordNewConfirm;
   await user.save();
-
-  // 4) send a new JWT
-  createSendToken(user, 200, res);
+  
+  res.status(200).json({
+    message: 'success',
+    data: null,
+  });
 });
 
-exports.confirmAccountCreation = catchAsync(async (req, res, next) => { // TODO
+/*
+  ********************
+  ACCOUNT VERIFICATION
+  ********************
+*/
+
+exports.resendValidationEmail = catchAsync(async (req, res, next) => {
   // 1) get user based on POSTed email
   const user = await User.findOne({ email: req.body.email });
   if (!user) return next(new AppError('User not found', 404));
 
-  // 2) generate a random reset token
-  const resetToken = user.createPasswordResetToken();
+  if (user.accountStatus === 'verified') return next(new AppError('User already verified', 403));
+
+  // 2) generate a random validation token
+  const validationToken = user.createValidationToken();
   // save token and token expiration to user
-  // disable MongoDB validators so we can save without a password
   await user.save({ validateBeforeSave: false });
 
   // 3) send email with token to user
-  const resetURL = `${req.protocol}://${req.get('host')}/api/v1/users/resetPassword/${resetToken}`;
+  const validationURL = `${req.protocol}://${req.get('host')}/api/v1/users/validation/${validationToken}`;
 
-  const message = `Click this link to finalise the creation of your account: ${resetURL}\n You can ignore this email if you did not create an account with us.`;
+  const message = `Click this link to finalise the creation of your account: ${validationURL}\n You can ignore this email if you did not create an account with us.`;
 
   try {
     await sendEmail({
       email: user.email,
-      subject: 'Password Reset Request (valid for 60 minutes!)',
+      subject: 'Confirm Your Genkan Account!',
       text: message,
     });
   
@@ -188,10 +247,33 @@ exports.confirmAccountCreation = catchAsync(async (req, res, next) => { // TODO
       message: 'Request sent successfully'
     })
   } catch (err) {
-    user.passwordResetToken = undefined;
-    user.passwordResetExpires = undefined;
+    user.validationToken = undefined;
+    user.validationExpires = undefined;
     await user.save({ validateBeforeSave: false });
 
-    return next(new AppError('Could not send password reset email', 500));
+    return next(new AppError('Could not send verification email', 500));
   }
+});
+
+exports.verifyAccount = catchAsync(async (req, res, next) => {
+  // 1) get user from token 
+  const user = await User.findOne({
+    validationToken: req.params.token,
+    validationExpires: { $gt: Date.now() }
+  });
+
+  // 2) check user status
+  if (!user) return next(new AppError('User not found', 404));
+  if (user.accountStatus != 'pending') return next(new AppError('User already verified', 403));
+
+  // 3) verify user if ok
+  user.accountStatus = 'verified';
+  user.validationToken = undefined;
+  user.validationExpires = undefined;
+  await user.save({ validateBeforeSave: false });
+  
+  res.status(200).json({
+    message: 'success',
+    data: null,
+  });
 });
