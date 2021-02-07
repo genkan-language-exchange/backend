@@ -61,6 +61,10 @@ const userSchema = new mongoose.Schema({
       type: Date,
       default: Date.now(),
     },
+    lastSeen: {
+      type: Date,
+      default: Date.now(),
+    },
     age: Number, // allow 16 but only show to under 18
     birthday: Date, // for age verification
     gender: {

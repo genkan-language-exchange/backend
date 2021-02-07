@@ -91,6 +91,8 @@ exports.login = catchAsync(async (req, res, next) => {
   if (!user) return next(new AppError('Check your credentials', 401));
 
   user.sid = req.sessionID;
+  user.matchSettings.lastSeen = Date.now();
+  
   await user.save({ validateBeforeSave: false });
 
   res.status(200).json({
@@ -102,7 +104,7 @@ exports.login = catchAsync(async (req, res, next) => {
 });
 
 exports.logout = catchAsync(async (req, res, next) => {
-  const user = await User.findOne({ sid: req.sessionID }).select('+password +sid');
+  const user = await User.findOne({ sid: req.sessionID }).select('+sid');
   if (!user) return next(new AppError('Already logged out', 404));
   
   user.sid = undefined;
@@ -117,8 +119,9 @@ exports.logout = catchAsync(async (req, res, next) => {
 });
 
 exports.protect = catchAsync(async (req, _, next) => {
-  // TODO: better protection lol
-  if (!req.sessionID) return next(new AppError('You have been logged out, please log in again', 403));
+  const user = await User.find({sid: req.sessionID}).select('+sid');
+  if (!user) return next(new AppError('You have been logged out, please log in again', 403));
+  req.user = user[0];
   next();
 });
 
