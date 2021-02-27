@@ -80,22 +80,31 @@ const userSchema = new mongoose.Schema({
     birthday: Date, // for age verification
     gender: {
       type: String,
-      enum: ['female', 'male', 'transgender'],
+      enum: ['male', 'female', 'non-binary'],
       required: true,
     },
     allowedGenders: { // user can block genders
       type: Array,
-      default: ['female', 'male', 'transgender'],
-    },
-    pronouns: {
-      type: String,
-      enum: ['he/him', 'she/her', 'they/them'],
-      required: true,
+      default: ['male', 'female', 'non-binary'],
     },
     nationality: String,
     residence: String, // user can block people in same country
     languageKnow: Array, // user can block anyone who doesn't know their target language
     languageLearn: Array, // in the interest of allowing pure cultural exchange this can be empty
+  },
+  filterSettings: {
+    ages: {
+      type: Array,
+      default: [18, 100]
+    },
+    genders: {
+      type: Array,
+      default: ['male', 'female', 'non-binary']
+    },
+    nationalities: Array,
+    resides: Array,
+    languagesSpoken: Array,
+    languagesStudy: Array,
   },
   accountNotes: { // allow admin+ to add notes to account
     type: String,
