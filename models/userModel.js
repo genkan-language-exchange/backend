@@ -56,6 +56,17 @@ const userSchema = new mongoose.Schema({
     type: String,
     select: false,
   },
+  profile: {
+    about: {
+      type: String,
+    },
+    interests: {
+      type: Array,
+    },
+    languageGoal: {
+      type: String,
+    },
+  },
   matchSettings: {
     accountCreated: { // user can block new accounts made within up to 1 month from sending message
       type: Date,
@@ -88,7 +99,14 @@ const userSchema = new mongoose.Schema({
   },
   accountNotes: { // allow admin+ to add notes to account
     type: String,
-    select: false,
+  },
+  report: {
+    isReported: {
+      type: Boolean,
+      default: false,
+    },
+    reportedReason: String,
+    reportedAt: Date,
   },
   setInactiveDate: Date,
   passwordChangedAt: Date,

@@ -21,7 +21,7 @@ const roomSchema = new mongoose.Schema({
       enum: ['pending', 'approved', 'shadow', 'blocked'],
       default: 'pending'
     }
-  },
+  }, // end of messagePermission
   messages: [
     {
       from: {
@@ -43,11 +43,14 @@ const roomSchema = new mongoose.Schema({
           type: Boolean,
           default: false,
         },
-        reported: {
-          type: Boolean,
-          default: false,
+        report: {
+          isReported: {
+            type: Boolean,
+            default: false,
+          },
+          reportedReason: String,
+          reportedAt: Date,
         },
-        reportedAt: Date,
       }, // end of readReceipt
     },
   ], // end of messages
