@@ -28,6 +28,7 @@ router
 router
   .route('/:id')
   .get(userController.getUser)
+  // .post(userController.followUser)
   .patch(authController.protect, authController.restrictTo('admin', 'owner'), userController.updateUser)
   .delete(authController.protect, authController.restrictTo('admin', 'owner'), userController.deleteUser)
 

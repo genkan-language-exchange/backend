@@ -56,8 +56,23 @@ const userSchema = new mongoose.Schema({
     type: String,
     select: false,
   },
+  profile: {
+    about: {
+      type: String,
+    },
+    interests: {
+      type: Array,
+    },
+    languageGoal: {
+      type: String,
+    },
+  },
   matchSettings: {
     accountCreated: { // user can block new accounts made within up to 1 month from sending message
+      type: Date,
+      default: Date.now(),
+    },
+    lastSeen: {
       type: Date,
       default: Date.now(),
     },
@@ -65,26 +80,42 @@ const userSchema = new mongoose.Schema({
     birthday: Date, // for age verification
     gender: {
       type: String,
-      enum: ['female', 'male', 'transgender'],
+      enum: ['male', 'female', 'non-binary'],
       required: true,
     },
     allowedGenders: { // user can block genders
       type: Array,
-      default: ['female', 'male', 'transgender'],
-    },
-    pronouns: {
-      type: String,
-      enum: ['he/him', 'she/her', 'they/them'],
-      required: true,
+      default: ['male', 'female', 'non-binary'],
     },
     nationality: String,
     residence: String, // user can block people in same country
     languageKnow: Array, // user can block anyone who doesn't know their target language
     languageLearn: Array, // in the interest of allowing pure cultural exchange this can be empty
   },
+  filterSettings: {
+    ages: {
+      type: Array,
+      default: [18, 100]
+    },
+    genders: {
+      type: Array,
+      default: ['male', 'female', 'non-binary']
+    },
+    nationalities: Array,
+    resides: Array,
+    languagesSpoken: Array,
+    languagesStudy: Array,
+  },
   accountNotes: { // allow admin+ to add notes to account
     type: String,
-    select: false,
+  },
+  report: {
+    isReported: {
+      type: Boolean,
+      default: false,
+    },
+    reportedReason: String,
+    reportedAt: Date,
   },
   setInactiveDate: Date,
   passwordChangedAt: Date,

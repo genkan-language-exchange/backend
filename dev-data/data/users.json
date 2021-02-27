@@ -1,34 +1,50 @@
 [
   {
     "name":"japaneseUser",
-    "email":"japanese@test.com",
+    "email":"japanese@example.com",
     "identifier": "0101",
     "password":"password",
     "passwordConfirm":"password",
     "accountStatus": "verified",
+    "profile": {
+      "about": "I like to study English by hand",
+      "interests": [],
+      "languageGoal": ""
+    },
     "matchSettings": {
       "age": 20,
       "birthday": "2000-11-30",
       "gender": "male",
-      "pronouns": "he/him",
       "languageKnow": ["Japanese"],
       "languageLearn": ["English"],
       "nationality": "JP",
       "residence": "Japan"
+    },
+    "filterSettings": {
+      "ages": [20, 30],
+      "genders": ["male","female","non-binary"],
+      "nationalities": ["US","CA","UK","AU"],
+      "resides": ["America","England","Canada","Australia","New Zealand"],
+      "languagesSpoken": ["English"],
+      "languagesStudy": ["Japanese"]
     }
   },
   {
     "name":"koreanUser",
-    "email":"korean@test.com",
+    "email":"korean@example.com",
     "identifier": "1905",
     "password":"password",
     "passwordConfirm":"password",
     "accountStatus": "verified",
+    "profile": {
+      "about": "",
+      "interests": [],
+      "languageGoal": ""
+    },
     "matchSettings": {
       "age": 30,
       "birthday": "1990-3-21",
       "gender": "female",
-      "pronouns": "she/her",
       "languageKnow": ["Korean"],
       "languageLearn": ["English"],
       "nationality": "KR",
@@ -37,16 +53,20 @@
   },
   {
     "name":"americanUser",
-    "email":"america@test.com",
+    "email":"america@example.com",
     "identifier": "1776",
     "password":"password",
     "passwordConfirm":"password",
     "accountStatus": "verified",
+    "profile": {
+      "about": "",
+      "interests": [],
+      "languageGoal": ""
+    },
     "matchSettings": {
       "age": 19,
       "birthday": "2001-4-15",
       "gender": "male",
-      "pronouns": "he/him",
       "languageKnow": ["English"],
       "languageLearn": ["Spanish"],
       "nationality": "US",
@@ -54,17 +74,65 @@
     }
   },
   {
+    "name":"vietnameseUser",
+    "email":"vietnam@example.com",
+    "identifier": "2021",
+    "password":"password",
+    "passwordConfirm":"password",
+    "accountStatus": "verified",
+    "profile": {
+      "about": "",
+      "interests": [],
+      "languageGoal": ""
+    },
+    "matchSettings": {
+      "age": 24,
+      "birthday": "1998-9-13",
+      "gender": "female",
+      "languageKnow": ["Vietnamese"],
+      "languageLearn": ["English"],
+      "nationality": "Vietnamese",
+      "residence": "Vietnam"
+    }
+  },
+  {
+    "name":"taiwaneseUser",
+    "email":"taiwanese@example.com",
+    "identifier": "0001",
+    "password":"password",
+    "passwordConfirm":"password",
+    "accountStatus": "verified",
+    "profile": {
+      "about": "",
+      "interests": [],
+      "languageGoal": ""
+    },
+    "matchSettings": {
+      "age": 20,
+      "birthday": "2000-9-13",
+      "gender": "female",
+      "languageKnow": ["Mandarin"],
+      "languageLearn": ["English"],
+      "nationality": "Taiwanese",
+      "residence": "Taiwan"
+    }
+  },
+  {
     "name":"underageUser",
-    "email":"minor@test.com",
+    "email":"minor@example.com",
     "identifier": "0023",
     "password":"password",
     "passwordConfirm":"password",
     "accountStatus": "verified",
+    "profile": {
+      "about": "",
+      "interests": [],
+      "languageGoal": ""
+    },
     "matchSettings": {
       "age": 9,
-      "birthday": "2011-6-1",
+      "birthday": "2012-1-1",
       "gender": "male",
-      "pronouns": "he/him",
       "languageKnow": ["English"],
       "languageLearn": ["Japanese"],
       "nationality": "CA",
@@ -72,17 +140,92 @@
     }
   },
   {
+    "name":"longTimeUser",
+    "email":"longtimer@example.com",
+    "identifier": "4649",
+    "password":"password",
+    "passwordConfirm":"password",
+    "accountStatus": "verified",
+    "profile": {
+      "about": "",
+      "interests": [],
+      "languageGoal": ""
+    },
+    "matchSettings": {
+      "accountCreated": "2020-02-27T07:05:30.768Z",
+      "age": 50,
+      "birthday": "1971-1-1",
+      "gender": "non-binary",
+      "languageKnow": ["English"],
+      "languageLearn": ["Spanish"],
+      "nationality": "CA",
+      "residence": "Canada"
+    }
+  },
+  {
+    "name":"alwaysOnlineUser",
+    "email":"nosleep@example.com",
+    "identifier": "4649",
+    "password":"password",
+    "passwordConfirm":"password",
+    "accountStatus": "verified",
+    "profile": {
+      "about": "",
+      "interests": [],
+      "languageGoal": ""
+    },
+    "matchSettings": {
+      "accountCreated": "2020-02-27T07:05:30.768Z",
+      "lastSeen": "2025-01-01T00:00:00.000Z",
+      "age": 50,
+      "birthday": "1971-1-1",
+      "gender": "non-binary",
+      "languageKnow": ["English"],
+      "languageLearn": ["Spanish"],
+      "nationality": "CA",
+      "residence": "Canada"
+    }
+  },
+  {
+    "name":"alwaysOfflineUser",
+    "email":"onlysleep@example.com",
+    "identifier": "4649",
+    "password":"password",
+    "passwordConfirm":"password",
+    "accountStatus": "verified",
+    "profile": {
+      "about": "",
+      "interests": [],
+      "languageGoal": ""
+    },
+    "matchSettings": {
+      "accountCreated": "2020-02-27T07:05:30.768Z",
+      "lastSeen": "2020-01-01T00:00:00.000Z",
+      "age": 50,
+      "birthday": "1971-1-1",
+      "gender": "male",
+      "languageKnow": ["English"],
+      "languageLearn": ["Spanish"],
+      "nationality": "CA",
+      "residence": "Canada"
+    }
+  },
+  {
     "name":"transUser",
-    "email":"lgbtq@test.com",
+    "email":"lgbtq@example.com",
     "identifier": "1337",
     "password":"password",
     "passwordConfirm":"password",
     "accountStatus": "verified",
+    "profile": {
+      "about": "",
+      "interests": [],
+      "languageGoal": ""
+    },
     "matchSettings": {
       "age": 21,
       "birthday": "2000-1-1",
-      "gender": "transgender",
-      "pronouns": "they/them",
+      "gender": "non-binary",
       "languageKnow": ["English"],
       "languageLearn": ["Japanese"],
       "nationality": "US",
@@ -90,17 +233,43 @@
     }
   },
   {
+    "name":"userWithANameThatIsTooLong",
+    "email":"bobbylongname@example.com",
+    "identifier": "9999",
+    "password":"password",
+    "passwordConfirm":"password",
+    "accountStatus": "verified",
+    "profile": {
+      "about": "",
+      "interests": [],
+      "languageGoal": ""
+    },
+    "matchSettings": {
+      "age": 18,
+      "birthday": "2003-3-15",
+      "gender": "male",
+      "languageKnow": ["French"],
+      "languageLearn": ["English"],
+      "nationality": "Canadian",
+      "residence": "England"
+    }
+  },
+  {
     "name":"bannedUser",
-    "email":"baddy@test.com",
+    "email":"baddy@example.com",
     "identifier": "1223",
     "password":"password",
     "passwordConfirm":"password",
     "accountStatus": "banned",
+    "profile": {
+      "about": "",
+      "interests": [],
+      "languageGoal": ""
+    },
     "matchSettings": {
       "age": 32,
       "birthday": "1988-3-15",
       "gender": "male",
-      "pronouns": "he/him",
       "languageKnow": ["English"],
       "languageLearn": ["French"],
       "nationality": "UK",
@@ -109,16 +278,20 @@
   },
   {
     "name":"newUser",
-    "email":"newbie@test.com",
+    "email":"newbie@example.com",
     "identifier": "6969",
     "password":"password",
     "passwordConfirm":"password",
     "accountStatus": "pending",
+    "profile": {
+      "about": "",
+      "interests": [],
+      "languageGoal": ""
+    },
     "matchSettings": {
       "age": 45,
       "birthday": "1975-6-12",
       "gender": "male",
-      "pronouns": "he/him",
       "languageKnow": ["French"],
       "languageLearn": ["German"],
       "nationality": "FR",
