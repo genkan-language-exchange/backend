@@ -92,7 +92,7 @@ const sessionConfig = {
   cookie: {
     httpOnly: true,
     secure: true,
-    sameSite: 'strict',
+    sameSite: 'lax',
     maxAge: process.env.COOKIE_AGE || 1000 * 60 * 60, // 1 hour for dev
   },
   name: 'session',
