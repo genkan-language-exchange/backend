@@ -89,13 +89,16 @@ const sessionStore = new MongoStore({
 });
 
 const sessionConfig = {
-  name: 'session',
-  secret: process.env.SESSION_SECRET || 'keepitsecretkeepitsafe',
-  resave: true,
-  saveUninitialized: true,
   cookie: {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'strict',
     maxAge: process.env.COOKIE_AGE || 1000 * 60 * 60, // 1 hour for dev
   },
+  name: 'session',
+  resave: true,
+  saveUninitialized: true,
+  secret: process.env.SESSION_SECRET || 'keepitsecretkeepitsafe',
   store: sessionStore,
 };
 
