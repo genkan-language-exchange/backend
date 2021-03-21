@@ -7,7 +7,6 @@ const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp');
-const bodyParser = require('body-parser');
 
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
@@ -18,6 +17,7 @@ const passport = require('passport');
 
 const userRouter = require('./routes/userRoutes');
 const roomRouter = require('./routes/roomRoutes');
+const storyRouter = require('./routes/storyRoutes');
 
 // passport config
 require('./passport')(passport);
@@ -47,6 +47,7 @@ app.use(cors());
 app.use(express.json({
   limit: '8kb'
 }));
+app.use(express.urlencoded({ extended: true }));
 
 // sanitize request data
 // NoSQL injection
@@ -63,7 +64,7 @@ app.use(
 );
 
 // add request time to request
-app.use((req, res, next) => {
+app.use((req, _, next) => {
   req.requestTime = new Date().toISOString();
   next();
 });
@@ -93,7 +94,7 @@ const sessionConfig = {
     httpOnly: true,
     secure: true,
     sameSite: 'strict',
-    maxAge: process.env.COOKIE_AGE || 1000 * 60 * 60, // 1 hour for dev
+    maxAge: +process.env.COOKIE_AGE || 1000 * 60 * 60, // 1 hour for dev
   },
   name: 'session',
   resave: true,
@@ -108,12 +109,10 @@ app.use(session(sessionConfig));
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
-
 // routes
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/rooms', roomRouter);
+app.use('/api/v1/stories', storyRouter);
 
 app.get('/', (req, res) => {
   res.status(200)

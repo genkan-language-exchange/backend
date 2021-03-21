@@ -81,32 +81,32 @@ const userSchema = new mongoose.Schema({
     gender: {
       type: String,
       enum: ['male', 'female', 'non-binary'],
-      required: true,
     },
     allowedGenders: { // user can block genders
       type: Array,
       default: ['male', 'female', 'non-binary'],
     },
     nationality: String,
-    residence: String, // user can block people in same country
-    languageKnow: Array, // user can block anyone who doesn't know their target language
-    languageLearn: Array, // in the interest of allowing pure cultural exchange this can be empty
+    residence: String,
+    languageKnow: Array,
+    languageLearn: Array,
   },
   filterSettings: {
     ages: {
       type: Array,
-      default: [18, 100]
+      default: [18, 100],
+      min: 18,
     },
     genders: {
       type: Array,
       default: ['male', 'female', 'non-binary']
     },
     nationalities: Array,
-    resides: Array,
-    languagesSpoken: Array,
-    languagesStudy: Array,
+    resides: Array, // user can block people in same country as them
+    languagesKnow: Array, // user can block anyone who doesn't know their target language
+    languagesLearn: Array, // in the interest of allowing pure cultural exchange this can be empty
   },
-  accountNotes: { // allow admin+ to add notes to account
+  accountNotes: { // allow admin to add notes to account
     type: String,
   },
   report: {
@@ -141,7 +141,7 @@ userSchema.pre('save', async function(next) {
 });
 
 userSchema.pre(/^find/, function(next) {
-  this.find({ active: {$ne: false} });
+  this.find({ active: { $ne: false } });
 
   next();
 });
