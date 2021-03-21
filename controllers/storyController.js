@@ -11,7 +11,7 @@ exports.getStory = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     status: 'success',
-    data: story,
+    data: { story },
   });
 });
 
@@ -22,7 +22,7 @@ exports.getStories = catchAsync(async (_, res, next) => {
 
   res.status(200).json({
     status: 'success',
-    data: stories,
+    data: { stories },
   });
 });
 
