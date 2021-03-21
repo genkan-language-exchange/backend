@@ -52,7 +52,20 @@ const storySchema = new mongoose.Schema({
     enum: ['deleted', 'draft', 'visible'],
     default: 'visible',
   }
+},
+{ // options
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true },
 });
+
+storySchema.pre(/^find/, function(next) {
+  this.populate({
+    path: 'userId',
+    select: '-__v -profile -passwordChangedAt -filterSettings -validationToken -validationExpires -email -role -report'
+  });
+  next();
+});
+
 
 const Story = mongoose.model('Story', storySchema);
 

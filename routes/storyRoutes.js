@@ -11,6 +11,8 @@ router.get('/:id', storyController.getStory);
 router.put('/:id', authController.protect, storyController.editStory);
 router.delete('/:id', authController.protect, storyController.deleteStory);
 
+// TODO: get all stories by one user
+
 router.delete('/admin/:id', authController.protect, authController.restrictTo('admin', 'owner'), storyController.adminDeleteStory);
 
 module.exports = router;

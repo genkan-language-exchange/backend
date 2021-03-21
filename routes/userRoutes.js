@@ -23,7 +23,11 @@ router.delete('/deleteMe', userController.deleteMe);
 router
   .route('/')
   .post(userController.getUser)
-  .get(userController.getAllUsers)
+  .get(userController.aliasGetAllUsers, userController.getAllUsers)
+
+router.route('/new').get(userController.aliasGetNew, userController.getAllUsers)
+router.route('/online').get(userController.aliasGetOnline, userController.getAllUsers)
+// router.route('/custom').post(userController.getCustom)
 
 router
   .route('/:id')
