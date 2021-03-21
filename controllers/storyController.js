@@ -2,29 +2,10 @@ const Story = require('../models/storyModel');
 const User = require('../models/userModel');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
+const factory = require('./factory')
 
-exports.getStory = catchAsync(async (req, res, next) => {
-  const storyId = req.params.id;
-  const story = await Story.findById(storyId).select('-__v');
-
-  if (!story) return next(new AppError('No story found', 500));
-
-  res.status(200).json({
-    status: 'success',
-    data: story,
-  });
-});
-
-exports.getStories = catchAsync(async (_, res, next) => {
-  const stories = await Story.find().select('-__v');
-
-  if (!stories) return next(new AppError('No stories found', 500));
-
-  res.status(200).json({
-    status: 'success',
-    data: stories,
-  });
-});
+exports.getStory = factory.getOne(Story, { path: 'userId' });
+exports.getStories = factory.getAll(Story, { path: 'userId' });
 
 exports.createStory = catchAsync(async (req, res, next) => {
   const { userId, content } = req.body;
@@ -41,9 +22,7 @@ exports.createStory = catchAsync(async (req, res, next) => {
 
   res.status(201).json({
     status: 'success',
-    data: {
-      newStory,
-    },
+    data: { newStory },
   });
 });
 
@@ -65,9 +44,7 @@ exports.editStory = catchAsync(async (req, res, next) => {
 
   res.status(201).json({
     status: 'success',
-    data: {
-      editedStory,
-    },
+    data: { editedStory },
   });
 });
 
@@ -90,11 +67,9 @@ exports.deleteStory = catchAsync(async (req, res, next) => {
   story.status = 'deleted';
   const deletedStory = await story.save;
 
-  res.status(200).json({
+  res.status(204).json({
     status: 'success',
-    data: {
-      deletedStory,
-    }
+    data: { deletedStory }
   });
 });
 
@@ -105,10 +80,8 @@ exports.adminDeleteStory = catchAsync(async (req, res, next) => {
 
   const deletedStory = await Story.findByIdAndDelete(storyId);
 
-  res.status(200).json({
+  res.status(204).json({
     status: 'success',
-    data: {
-      deletedStory,
-    }
+    data: { deletedStory }
   });
 });

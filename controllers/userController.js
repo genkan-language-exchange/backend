@@ -23,7 +23,6 @@ exports.getUser = catchAsync(async (req, res, next) => {
       name: req.body.name,
       identifier: req.body.identifier
     };
-
     user = await User.find(filter).select('-__v -password');
   }
   
@@ -36,18 +35,26 @@ exports.getUser = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.getAllUsers = catchAsync(async (req, res, next) => {
-  const users = await User.find().select('-__v');
+exports.getAllUsers = factory.getAll(User)
 
-  if (!users.length) return next(new AppError('No users found :(', 404));
+exports.aliasGetAllUsers = catchAsync(async (req, _, next) => {
+  req.query.limit = '25';
+  req.query.fields = 'name,identifier,matchSettings';
+  next();
+});
 
-  res.status(200).json({
-    status: 'success',
-    results: users.length,
-    data: {
-      users
-    },
-  });
+exports.aliasGetNew = catchAsync(async (req, _, next) => {
+  req.query.limit = '25';
+  req.query.sort = '-matchSettings.accountCreated';
+  req.query.fields = 'name,identifier,matchSettings';
+  next();
+});
+
+exports.aliasGetOnline = catchAsync(async (req, _, next) => {
+  req.query.limit = '25';
+  req.query.sort = '-matchSettings.lastSeen';
+  req.query.fields = 'name,identifier,matchSettings';
+  next();
 });
 
 exports.updateMe = async (req, res, next) => {
