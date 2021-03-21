@@ -1,12 +1,12 @@
 module.exports = function (usedIdentifiers) {
   const identifierLimit = 9999;
   
-  if(usedIdentifiers.length == identifierLimit)
+  if (usedIdentifiers.length == identifierLimit)
     throw new Exception('No more identifiers available');
 
   let allowedIdentifiers = [...Array(identifierLimit).keys()];
 
-  for(let identifier of usedIdentifiers)
+  for (let identifier of usedIdentifiers)
   // remove used identifiers
   allowedIdentifiers.splice(allowedIdentifiers.indexOf(identifier), 1);
   

@@ -118,28 +118,6 @@
     }
   },
   {
-    "name":"underageUser",
-    "email":"minor@example.com",
-    "identifier": "0023",
-    "password":"password",
-    "passwordConfirm":"password",
-    "accountStatus": "verified",
-    "profile": {
-      "about": "",
-      "interests": [],
-      "languageGoal": ""
-    },
-    "matchSettings": {
-      "age": 9,
-      "birthday": "2012-1-1",
-      "gender": "male",
-      "languageKnow": ["English"],
-      "languageLearn": ["Japanese"],
-      "nationality": "CA",
-      "residence": "Canada"
-    }
-  },
-  {
     "name":"longTimeUser",
     "email":"longtimer@example.com",
     "identifier": "4649",

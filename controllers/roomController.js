@@ -26,7 +26,3 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
   });
 
 });
-
-exports.reportMessage = catchAsync(async (req, res, next) => {
-  
-})

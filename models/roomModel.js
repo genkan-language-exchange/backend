@@ -1,6 +1,4 @@
 const mongoose = require('mongoose');
-const User = require('./userModel');
-const AppError = require('../utils/appError');
 
 const roomSchema = new mongoose.Schema({
   members: [
