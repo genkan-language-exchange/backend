@@ -18,7 +18,11 @@ const storySchema = new mongoose.Schema({
   image: String,
   comments: [
     {
-      userId: String,
+      commenter: {
+        type: mongoose.Schema.ObjectId,
+        ref: 'User',
+        required: [true, 'A like must belong to a user'],
+      },
       content: String,
       createdAt: Date,
     }
@@ -59,10 +63,20 @@ const storySchema = new mongoose.Schema({
 });
 
 storySchema.pre(/^find/, function(next) {
-  this.populate({
-    path: 'userId',
-    select: '-__v -profile -passwordChangedAt -filterSettings -validationToken -validationExpires -email -role -report'
-  });
+  this.populate([
+    {
+      path: 'userId',
+      select: 'name identifier _id matchSettings accountStatus active role'
+    },
+    {
+      path: 'comments.commenter',
+      select: 'name identifier _id matchSettings accountStatus active role'
+    },
+    {
+      path: 'likes.likeUser',
+      select: 'name identifier _id matchSettings accountStatus active role'
+    },
+  ]);
   next();
 });
 
