@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const storySchema = new mongoose.Schema({
+const storyLikeSchema = new mongoose.Schema({
   storyId: {
     type: mongoose.Schema.ObjectId,
     ref: 'Story',
@@ -11,8 +11,12 @@ const storySchema = new mongoose.Schema({
     ref: 'User',
     required: [true, 'A like must belong to a user'],
   },
+  likeType: {
+    type: String,
+    default: 'heart',
+  }
 });
 
-const Story = mongoose.model('Story', storySchema);
+const StoryLike = mongoose.model('StoryLike', storyLikeSchema);
 
-module.exports = Story;
+module.exports = StoryLike;

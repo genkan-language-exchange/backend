@@ -40,7 +40,7 @@ exports.likeStory = catchAsync(async (req, res, next) => {
     story.likes.push({
       likeUser: userId,
       createdAt: Date.now(),
-      type: type || 'heart'
+      likeType: type || 'heart'
     });
   }
   await story.save();
