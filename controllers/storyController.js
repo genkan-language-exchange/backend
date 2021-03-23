@@ -97,7 +97,7 @@ exports.editStory = catchAsync(async (req, res, next) => {
   const story = await Story.findById(storyId);
   const storyUserId = story.userId.toString();
   
-  if ((storyUserId !== userId) || (storyUserId !== userId && (user.role !== 'admin' || user.role !== 'owner'))) return next(new AppError("This isn't yours", 403));
+  if (storyUserId !== userId) return next(new AppError("This isn't yours", 403));
 
   story.content = content;
   const editedStory = await story.save();
@@ -123,10 +123,7 @@ exports.deleteStory = catchAsync(async (req, res, next) => {
   const story = await Story.findById(storyId)
   const storyUserId = story.userId.toString();
 
-  if (
-    (storyUserId !== userId) ||
-    (storyUserId !== userId && (user.role !== 'admin' || user.role !== 'owner')))
-      return next(new AppError("This isn't yours", 403));
+  if (storyUserId !== userId) return next(new AppError("This isn't yours", 403));
 
   story.status = 'deleted';
   const deletedStory = await story.save;
@@ -184,10 +181,7 @@ exports.editComment = catchAsync(async (req, res, next) => {
   if (!commentExists || !commentExists.visible) return next(new AppError("Comment not found", 404));
   const commentUser = commentExists.commenter;
   
-  if (
-    (commentUser._id.toString() !== userId) ||
-    (commentUser._id.toString() !== userId && (commentUser.role !== 'admin' || commentUser.role !== 'owner')))
-      return next(new AppError("This isn't yours", 403));
+  if (commentUser._id.toString() !== userId) return next(new AppError("This isn't yours", 403));
 
   if (!commentExists.edited) commentExists.originalContent = content;
   commentExists.edited = true
@@ -210,12 +204,9 @@ exports.deleteComment = catchAsync(async (req, res, next) => {
 
   const commentExists = story.comments.find(comment => comment._id.toString() === commentId);
   if (!commentExists || !commentExists.visible) return next(new AppError("Comment not found", 404));
-  const commentUser = commentExists.commenter;
   
-  if (
-    (commentUser._id.toString() !== userId) ||
-    (commentUser._id.toString() !== userId && (commentUser.role !== 'admin' || commentUser.role !== 'owner')))
-      return next(new AppError("This isn't yours", 403));
+  const commentUser = commentExists.commenter;
+  if (commentUser._id.toString() !== userId) return next(new AppError("This isn't yours", 403));
 
   commentExists.visible = false;
 
@@ -232,11 +223,11 @@ exports.adminDeleteComment = catchAsync(async (req, res) => {
   const storyId = req.params.id;
 
   const story = await Story.findById(storyId);
-  story.comments = story.comments.filter(comment => comment._id !== commentId);
-  story.save();
+  story.comments = story.comments.filter(comment => comment._id.toString() !== commentId);
+  await story.save();
 
   res.status(204).json({
     status: 'success',
-    data: { deletedStory }
+    data: { comments: story.comments }
   });
 });
