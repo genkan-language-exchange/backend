@@ -10,9 +10,8 @@ exports.getStories = factory.getAll(Story, { path: 'userId' });
 exports.createStory = catchAsync(async (req, res, next) => {
   const { userId, content } = req.body;
 
-  const user = await User.findById(userId);
-  if (!user || user?.accountStatus === 'inactive') return next(new AppError('User not found', 404));
-  if (user.accountStatus === 'banned') return next(new AppError('User is banned', 404));
+  user.matchSettings.lastSeen = Date.now();
+  user.lastPosted = Date.now();
 
   const newStory = await Story.create({
     userId,
@@ -23,6 +22,32 @@ exports.createStory = catchAsync(async (req, res, next) => {
   res.status(201).json({
     status: 'success',
     data: { newStory },
+  });
+});
+
+exports.likeStory = catchAsync(async (req, res, next) => {
+  const { userId, type } = req.body;
+  const storyId = req.params.id;
+
+  const story = await Story.findById(storyId);
+  if (!story) return next(new AppError("Story not found", 404));
+
+  const liked = story.likes.find(like => like.likeUser._id.toString() === userId);
+
+  if (liked) {
+    story.likes = story.likes.filter(like => like.likeUser._id.toString() !== userId);
+  } else {
+    story.likes.push({
+      likeUser: userId,
+      createdAt: Date.now(),
+      type: type || 'heart'
+    });
+  }
+  await story.save();
+
+  res.status(200).json({
+    status: 'success',
+    data: { likes: story.likes },
   });
 });
 

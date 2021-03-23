@@ -7,6 +7,7 @@ const router = express.Router();
 router.get('/', storyController.getStories);
 router.post('/', authController.protect, storyController.createStory);
 
+router.post('/like/:id', authController.protect, storyController.likeStory);
 router.get('/:id', storyController.getStory);
 router.put('/:id', authController.protect, storyController.editStory);
 router.delete('/:id', authController.protect, storyController.deleteStory);
