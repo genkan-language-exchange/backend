@@ -24,7 +24,13 @@ const storySchema = new mongoose.Schema({
         required: [true, 'A like must belong to a user'],
       },
       content: String,
+      originalContent: String,
+      edited: Boolean,
       createdAt: Date,
+      visible: {
+        type: Boolean,
+        default: true,
+      }
     }
   ],
   likes: [

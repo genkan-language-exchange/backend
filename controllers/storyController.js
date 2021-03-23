@@ -7,7 +7,11 @@ const factory = require('./factory')
 exports.getStory = factory.getOne(Story, { path: 'userId' });
 exports.getStories = factory.getAll(Story, { path: 'userId' });
 
-exports.createStory = catchAsync(async (req, res, next) => {
+/*******************
+*******CREATE*******
+*******************/
+
+exports.createStory = catchAsync(async (req, res) => {
   const { userId, content } = req.body;
 
   user.matchSettings.lastSeen = Date.now();
@@ -51,6 +55,37 @@ exports.likeStory = catchAsync(async (req, res, next) => {
   });
 });
 
+exports.reportStory = catchAsync(async (_req, res, _next) => {
+  const { userId, reason } = req.body;
+  const storyId = req.params.id;
+
+  const story = await Story.findById(storyId);
+  if (!story) return next(new AppError("Story not found", 404));
+
+  if (story.report.reportDetails.find(report => report.reportedBy._id === userId))
+    return next(new AppError("Already reported by user", 403));
+
+  story.isReported = true,
+  story.report.reportDetails.push({
+    reportedReason: reason,
+    reportedAt: Date.now(),
+    reportedBy: userId
+  });
+
+  await story.save();
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      report: story.report
+    }
+  });
+});
+
+/*******************
+*******UPDATE*******
+*******************/
+
 exports.editStory = catchAsync(async (req, res, next) => {
   const { userId, content } = req.body;
   const storyId = req.params.id;
@@ -67,11 +102,15 @@ exports.editStory = catchAsync(async (req, res, next) => {
   story.content = content;
   const editedStory = await story.save();
 
-  res.status(201).json({
+  res.status(200).json({
     status: 'success',
     data: { editedStory },
   });
 });
+
+/*******************
+*******DELETE*******
+*******************/
 
 exports.deleteStory = catchAsync(async (req, res, next) => {
   const { userId } = req.body;
@@ -98,12 +137,103 @@ exports.deleteStory = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.adminDeleteStory = catchAsync(async (req, res, next) => {
+exports.adminDeleteStory = catchAsync(async (req, res) => {
+  const storyId = req.params.id;
+  const deletedStory = await Story.findByIdAndDelete(storyId);
+
+  res.status(204).json({
+    status: 'success',
+    data: { deletedStory }
+  });
+});
+
+/*******************
+******COMMENT*******
+*******************/
+
+exports.createComment = catchAsync(async (req, res, next) => {
+  const { userId, content } = req.body;
   const storyId = req.params.id;
 
-  if (storyUserId !== userId && (user.role !== 'admin' || user.role !== 'owner')) return next(new AppError("You lack sufficient permissions to perform this action", 403));
+  const story = await Story.findById(storyId);
+  if (!story) return next(new AppError("Story not found", 404));
 
-  const deletedStory = await Story.findByIdAndDelete(storyId);
+  story.comments.push({
+    commenter: userId,
+    content,
+    createdAt: Date.now()
+  })
+
+  await story.save()
+
+  res.status(200).json({
+    status: 'success',
+    data: { comments: story.comments }
+  });
+});
+
+exports.editComment = catchAsync(async (req, res, next) => {
+  const { userId, commentId, content } = req.body;
+  const storyId = req.params.id;
+  if (!content) return next(new AppError("Missing body", 400));
+
+  const story = await Story.findById(storyId);
+  if (!story) return next(new AppError("Story not found", 404));
+
+  const commentExists = story.comments.find(comment => comment._id.toString() === commentId);
+  if (!commentExists || !commentExists.visible) return next(new AppError("Comment not found", 404));
+  const commentUser = commentExists.commenter;
+  
+  if (
+    (commentUser._id.toString() !== userId) ||
+    (commentUser._id.toString() !== userId && (commentUser.role !== 'admin' || commentUser.role !== 'owner')))
+      return next(new AppError("This isn't yours", 403));
+
+  if (!commentExists.edited) commentExists.originalContent = content;
+  commentExists.edited = true
+  commentExists.content = content;
+  
+  await story.save();
+
+  res.status(200).json({
+    status: 'success',
+    data: { comments: story.comments }
+  });
+});
+
+exports.deleteComment = catchAsync(async (req, res, next) => {
+  const { userId, commentId } = req.body;
+  const storyId = req.params.id;
+
+  const story = await Story.findById(storyId);
+  if (!story) return next(new AppError("Story not found", 404));
+
+  const commentExists = story.comments.find(comment => comment._id.toString() === commentId);
+  if (!commentExists || !commentExists.visible) return next(new AppError("Comment not found", 404));
+  const commentUser = commentExists.commenter;
+  
+  if (
+    (commentUser._id.toString() !== userId) ||
+    (commentUser._id.toString() !== userId && (commentUser.role !== 'admin' || commentUser.role !== 'owner')))
+      return next(new AppError("This isn't yours", 403));
+
+  commentExists.visible = false;
+
+  await story.save();
+
+  res.status(204).json({
+    status: 'success',
+    data: { comments: story.comments }
+  });
+});
+
+exports.adminDeleteComment = catchAsync(async (req, res) => {
+  const { commentId } = req.body;
+  const storyId = req.params.id;
+
+  const story = await Story.findById(storyId);
+  story.comments = story.comments.filter(comment => comment._id !== commentId);
+  story.save();
 
   res.status(204).json({
     status: 'success',
