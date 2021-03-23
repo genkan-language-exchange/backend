@@ -24,7 +24,13 @@ const storySchema = new mongoose.Schema({
         required: [true, 'A like must belong to a user'],
       },
       content: String,
+      originalContent: String,
+      edited: Boolean,
       createdAt: Date,
+      visible: {
+        type: Boolean,
+        default: true,
+      }
     }
   ],
   likes: [
@@ -34,7 +40,14 @@ const storySchema = new mongoose.Schema({
         ref: 'User',
         required: [true, 'A like must belong to a user'],
       },
-      createdAt: Date,
+      createdAt: {
+        type: Date,
+        default: Date.now()
+      },
+      likeType: {
+        type: String,
+        default: 'heart',
+      }
     },
   ],
   report: {
