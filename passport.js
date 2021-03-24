@@ -10,7 +10,7 @@ module.exports = function(passport) {
       // match user
       await User.findOne({ email }).select('+password')
         .then(async (user) => {
-          if (!user) return done(null, false, { message: 'Email not registered' });
+          if (!user) return done(new AppError('Email not registered', 401), false);
           
           bcrypt.compare(password, user.password, (err, isMatch) => {
             if (err) return new AppError('Something went wrong validating the password', 500);
