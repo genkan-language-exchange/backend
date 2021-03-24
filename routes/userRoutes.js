@@ -17,6 +17,7 @@ router.patch('/updatePassword', authController.updatePassword);
 router.patch('/validation/:token', authController.verifyAccount);
 router.post('/revalidate', authController.resendValidationEmail);
 
+router.post('/onlineStatusUpdate', userController.updateOnlineStatus);
 router.patch('/updateMe', userController.updateMe);
 router.delete('/deleteMe', userController.deleteMe);
 
