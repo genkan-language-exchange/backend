@@ -87,7 +87,6 @@ exports.login = catchAsync(async (req, res, next) => {
 
   // check if user exists
   const user = await User.findOne({ email }).select('+sid');
-  console.log(user);
 
   if (!user) return res.status(401).json({
     status: "fail",
@@ -96,6 +95,7 @@ exports.login = catchAsync(async (req, res, next) => {
 
   user.sid = req.sessionID;
   user.matchSettings.lastSeen = Date.now();
+  console.log(user.matchSettings.lastSeen);
   
   await user.save({ validateBeforeSave: false });
 
@@ -123,6 +123,7 @@ exports.logout = catchAsync(async (req, res, next) => {
 });
 
 exports.protect = catchAsync(async (req, _, next) => {
+  console.log(req.sessionID);
   const user = await User.find({sid: req.sessionID}).select('+sid');
   if (!user) return next(new AppError('You have been logged out, please log in again', 403));
   req.user = user[0];
