@@ -123,9 +123,11 @@ exports.logout = catchAsync(async (req, res, next) => {
 });
 
 exports.protect = catchAsync(async (req, _, next) => {
-  console.log(req.sessionID);
   const user = await User.find({sid: req.sessionID}).select('+sid');
   if (!user) return next(new AppError('You have been logged out, please log in again', 403));
+
+  user.matchSettings.lastSeen = Date.now();
+  await user.save({ validateBeforeSave: false });
   req.user = user[0];
   next();
 });
