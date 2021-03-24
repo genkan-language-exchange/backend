@@ -14,11 +14,8 @@ module.exports = function(passport) {
           
           bcrypt.compare(password, user.password, (err, isMatch) => {
             if (err) return new AppError('Something went wrong validating the password', 500);
-            if (isMatch) {
-              return done(null, user);
-            } else {
-              return done(null, false, { message: 'Password incorrect' });
-            }
+            if (isMatch) return done(null, user);
+            return done(new AppError('Bad password', 401), false);
           }
         );
       })
