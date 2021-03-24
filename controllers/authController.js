@@ -87,11 +87,11 @@ exports.login = catchAsync(async (req, res, next) => {
 
   // check if user exists
   const user = await User.findOne({ email }).select('+sid');
+  console.log(user);
 
   if (!user) return res.status(401).json({
     status: "fail",
-    message: "User not found",
-    data: {}
+    message: "User not found"
   });
 
   user.sid = req.sessionID;
