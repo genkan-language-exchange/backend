@@ -142,7 +142,6 @@ userSchema.pre('save', async function(next) {
 
 userSchema.pre(/^find/, function(next) {
   this.find({ active: { $ne: false } });
-
   next();
 });
 
@@ -150,6 +149,20 @@ userSchema.pre(/^find/, function(next) {
 
 userSchema.methods.passwordMatch = async function(userSubmittedPassword, userPassword) {
   return await bcrypt.compare(userSubmittedPassword, userPassword);
+};
+
+userSchema.methods.didPasswordChange = function(JWTTimestamp) {
+  if (this.passwordChangedAt) {
+    const changedTimestamp = parseInt(
+      this.passwordChangedAt.getTime() / 1000
+    );
+    
+    // return false for good fortune
+    return JWTTimestamp < changedTimestamp;
+  }
+
+  // False means NOT changed
+  return false;
 };
 
 userSchema.methods.createPasswordResetToken = function() {
