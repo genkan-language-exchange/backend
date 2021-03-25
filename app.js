@@ -40,8 +40,19 @@ const limiter = rateLimit({
 });
 app.use('/api', limiter);
 
+const whitelist = [
+  'https://genkan.herokuapp.com/',
+  'http://localhost:8080'
+]
+
 // cors
-app.use(cors());
+const corsOps = {
+  credentials: true,
+  sameSite: process.env.NODE_ENV === "development" ? true : "none",
+  secure: process.env.NODE_ENV === "development" ? false : true,
+  origin: (origin, cb) => whitelist.includes(origin) || !origin ? cb(null, true) : cb(new Error('Not allowed by CORS'))
+}
+app.use(cors(corsOps));
 
 // body parser
 app.use(express.json({
@@ -91,10 +102,10 @@ const sessionStore = new MongoStore({
 
 const sessionConfig = {
   cookie: {
-    httpOnly: true,
-    secure: true,
+    HttpOnly: true,
+    secure: false,
     sameSite: 'strict',
-    maxAge: +process.env.COOKIE_AGE || 1000 * 60 * 60, // 1 hour for dev
+    maxAge: process.env.COOKIE_AGE || 1000 * 60 * 60, // 1 hour for dev
   },
   name: 'session',
   resave: true,
@@ -120,7 +131,7 @@ app.get('/', (req, res) => {
 })
 
 // route fallback
-app.all('*', (req, res, next) => {
+app.all('*', (req, _, next) => {
   const errMessage = `${req.originalUrl} is not defined`;
   // express assumes that any argument in next() is an error
   next(new AppError(errMessage, 404));

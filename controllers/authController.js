@@ -1,5 +1,6 @@
 const crypto = require('crypto');
 const moment = require('moment');
+const passport = require('passport');
 
 const User = require('../models/userModel');
 const catchAsync = require('../utils/catchAsync');
@@ -95,8 +96,7 @@ exports.login = catchAsync(async (req, res, next) => {
 
   user.sid = req.sessionID;
   user.matchSettings.lastSeen = Date.now();
-  console.log(user.matchSettings.lastSeen);
-  
+
   await user.save({ validateBeforeSave: false });
 
   res.status(200).json({
@@ -123,8 +123,12 @@ exports.logout = catchAsync(async (req, res, next) => {
 });
 
 exports.protect = catchAsync(async (req, _, next) => {
-  const user = await User.find({sid: req.sessionID}).select('+sid');
-  if (!user) return next(new AppError('You have been logged out, please log in again', 403));
+  console.log('sid: ' + req.sessionID);
+  console.log('passport user: ');
+  console.log(req);
+  const user = await User.find({ sid: req.sessionID }).select('+sid');
+
+  if (!user[0] || user[0] == undefined) return next(new AppError('You have been logged out, please log in again', 403));
 
   user.matchSettings.lastSeen = Date.now();
   await user.save({ validateBeforeSave: false });

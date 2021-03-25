@@ -8,6 +8,7 @@ exports.getStory = factory.getOne(Story, { path: 'userId' });
 exports.getStories = factory.getAll(Story, { path: 'userId' });
 exports.getDrafts = catchAsync(async (req, res) => {
   const { userId } = req.body;
+  
 });
 
 /*******************
@@ -16,12 +17,8 @@ exports.getDrafts = catchAsync(async (req, res) => {
 
 exports.createStory = catchAsync(async (req, res) => {
   const { userId, content, status } = req.body;
-
-  const user = await User.findById(userId)
-  if (!user) return next(new AppError("User not found", 404));
-
-  user.matchSettings.lastSeen = Date.now();
-  user.lastPosted = Date.now();
+  console.log(req.body);
+  console.log(req.headers);
 
   await user.save({ validateBeforeSave: false });
   const newStory = await Story.create({
