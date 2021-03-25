@@ -123,12 +123,10 @@ exports.logout = catchAsync(async (req, res, next) => {
 });
 
 exports.protect = catchAsync(async (req, _, next) => {
-  console.log('sid: ' + req.sessionID);
-  console.log('passport user: ');
-  console.log(req);
-  const user = await User.find({ sid: req.sessionID }).select('+sid');
-
-  if (!user[0] || user[0] == undefined) return next(new AppError('You have been logged out, please log in again', 403));
+  const user = await User.findById(req.body.userId).select('+sid');
+  console.log(user.sid);
+  console.log(req.sessionID);
+  if (!user || !user.sid || user.sid !== req.sessionID) return next(new AppError('You have been logged out, please log in again', 403));
 
   user.matchSettings.lastSeen = Date.now();
   await user.save({ validateBeforeSave: false });
