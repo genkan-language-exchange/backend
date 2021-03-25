@@ -4,7 +4,7 @@ const storyController = require('../controllers/storyController');
 
 const router = express.Router();
 
-router.get('/', storyController.getStories);
+router.get('/', storyController.getPublished, storyController.getStories);
 router.post('/', authController.protect, storyController.createStory);
 
 router.delete('/comment/admin/:id', authController.protect, storyController.adminDeleteComment);
