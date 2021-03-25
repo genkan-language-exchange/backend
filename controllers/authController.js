@@ -80,7 +80,6 @@ exports.signup = catchAsync(async (req, res, next) => {
     matchSettings: req.body.matchSettings,
     validationToken,
     validationExpires: Date.now() + (30 * 60 * 1000),
-    sid: req.sessionID,
   });
 
   // send account validation email
@@ -121,26 +120,14 @@ exports.login = catchAsync(async (req, res, next) => {
     message: "User not found"
   });
 
-  user.sid = req.sessionID;
   user.matchSettings.lastSeen = Date.now();
   await user.save({ validateBeforeSave: false });
 
   createSendToken(user, 200, res);
 });
 
-exports.logout = catchAsync(async (req, res, next) => {
-  const user = await User.findOne({ sid: req.sessionID }).select('+sid');
-  if (!user) return next(new AppError('Already logged out', 404));
-  
-  user.sid = undefined;
-  await user.save({ validateBeforeSave: false });
-
-  req.logout();
-  req.session.destroy(err => {
-    if (err) return next(new AppError('Unable to log out at this time', 500));
-    res.clearCookie();
-    res.status(204).send();
-  });
+exports.logout = catchAsync(async (_, res) => {
+  res.status(204).send()
 });
 
 exports.protect = catchAsync(async (req, _, next) => {
@@ -170,12 +157,15 @@ exports.protect = catchAsync(async (req, _, next) => {
     );
   }
   // 4) Check if user changed password after the token was issued
-  if (currentUser.didPasswordChange(decoded.iat)) {
+  if (currentUser.changedPasswordAfter(decoded.iat)) {
     return next(
       new AppError('User recently changed password! Please log in again.', 401)
     );
   }
+  currentUser.matchSettings.lastSeen = Date.now()
+  await currentUser.save({ validateBeforeSave: false })
   // GRANT ACCESS TO PROTECTED ROUTE
+
   req.user = currentUser;
   next();
 });
@@ -247,7 +237,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   user.passwordResetToken = undefined;
   user.passwordResetExpires = undefined;
 
-  await user.save();
+  await user.save({ validateBeforeSave: false });
 
   // 3) update passwordCreatedAt property for user
   // happens in middleware on user model

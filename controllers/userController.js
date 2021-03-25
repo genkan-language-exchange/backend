@@ -57,20 +57,6 @@ exports.aliasGetOnline = catchAsync(async (req, _, next) => {
   next();
 });
 
-exports.updateOnlineStatus = catchAsync(async (req, res, next) => {
-  const { userId } = req.body;
-  const user = User.findById(userId)
-
-  if (!user) return next(new AppError('User not found', 404));
-
-  user.lastSeen = Date.now()
-  user.save()
-
-  res.status(200).json({
-    status: 'success'
-  })
-});
-
 exports.updateMe = async (req, res, next) => {
   // 1) create error if user POSTs password
   if (req.body.password || req.body.passwordConfirm) return next(new AppError('Wrong route for password updating', 400));

@@ -16,23 +16,21 @@ router.patch('/updatePassword', authController.protect, authController.updatePas
 
 router.patch('/validation/:token', authController.verifyAccount);
 router.post('/revalidate', authController.resendValidationEmail);
-
-router.post('/onlineStatusUpdate', userController.updateOnlineStatus);
 router.patch('/updateMe', authController.protect, userController.updateMe);
 router.delete('/deleteMe', authController.protect, userController.deleteMe);
 
 router
   .route('/')
   .post(userController.getUser)
-  .get(userController.aliasGetAllUsers, userController.getAllUsers)
+  .get(authController.protect, userController.aliasGetAllUsers, userController.getAllUsers)
 
 router.route('/new').get(authController.protect, userController.aliasGetNew, userController.getAllUsers)
-router.route('/online').get(userController.aliasGetOnline, userController.getAllUsers)
+router.route('/online').get(authController.protect, userController.aliasGetOnline, userController.getAllUsers)
 // router.route('/custom').post(userController.getCustom)
 
 router
   .route('/:id')
-  .get(userController.getUser)
+  .get(authController.protect, userController.getUser)
   // .post(userController.followUser)
   .patch(authController.protect, authController.restrictTo('admin', 'owner'), userController.updateUser)
   .delete(authController.protect, authController.restrictTo('admin', 'owner'), userController.deleteUser)
