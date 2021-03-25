@@ -1,5 +1,4 @@
 const express = require('express');
-const mongoose = require('mongoose');
 const morgan = require('morgan');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
@@ -11,16 +10,9 @@ const hpp = require('hpp');
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
 
-const session = require('express-session');
-const MongoStore = require('connect-mongo')(session);
-const passport = require('passport');
-
 const userRouter = require('./routes/userRoutes');
 const roomRouter = require('./routes/roomRoutes');
 const storyRouter = require('./routes/storyRoutes');
-
-// passport config
-require('./passport')(passport);
 
 const app = express();
 
@@ -40,19 +32,8 @@ const limiter = rateLimit({
 });
 app.use('/api', limiter);
 
-const whitelist = [
-  'https://genkan.herokuapp.com/',
-  'http://localhost:8080'
-]
-
 // cors
-const corsOps = {
-  credentials: true,
-  sameSite: process.env.NODE_ENV === "development" ? true : "none",
-  secure: process.env.NODE_ENV === "development" ? false : true,
-  origin: (origin, cb) => whitelist.includes(origin) || !origin ? cb(null, true) : cb(new Error('Not allowed by CORS'))
-}
-app.use(cors(corsOps));
+app.use(cors());
 
 // body parser
 app.use(express.json({
@@ -79,46 +60,6 @@ app.use((req, _, next) => {
   req.requestTime = new Date().toISOString();
   next();
 });
-
-const DB = process.env.DATABASE.replace('<PASSWORD>', process.env.DATABASE_PASSWORD);
-
-const dbOptions = {
-  useNewUrlParser: true,
-  useCreateIndex: true,
-  useFindAndModify: false,
-  useUnifiedTopology: true
-};
-
-const connection = mongoose
-  .connect(DB, dbOptions)
-  .then(() => console.log('DB connection success'));
-
-// session
-const sessionStore = new MongoStore({
-  mongooseConnect: connection,
-  collection: 'sessions',
-  url: DB,
-});
-
-const sessionConfig = {
-  cookie: {
-    HttpOnly: true,
-    secure: false,
-    sameSite: 'strict',
-    maxAge: process.env.COOKIE_AGE || 1000 * 60 * 60, // 1 hour for dev
-  },
-  name: 'session',
-  resave: true,
-  saveUninitialized: true,
-  secret: process.env.SESSION_SECRET || 'keepitsecretkeepitsafe',
-  store: sessionStore,
-};
-
-app.use(session(sessionConfig));
-
-// passport
-app.use(passport.initialize());
-app.use(passport.session());
 
 // routes
 app.use('/api/v1/users', userRouter);

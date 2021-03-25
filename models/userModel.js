@@ -133,16 +133,21 @@ userSchema.pre('save', async function(next) {
 
   // hash password 12 rounds
   this.password = await bcrypt.hash(this.password, 12);
-  this.passwordChangedAt = Date.now() - 1000;
 
   // remove password confirm field
   this.passwordConfirm = undefined;
   next();
 });
 
+userSchema.pre('save', function(next) {
+  if (!this.isModified('password') || this.accountStatus === 'pending') return next();
+
+  this.passwordChangedAt = Date.now() - 1000;
+  next();
+});
+
 userSchema.pre(/^find/, function(next) {
   this.find({ active: { $ne: false } });
-
   next();
 });
 
@@ -150,6 +155,20 @@ userSchema.pre(/^find/, function(next) {
 
 userSchema.methods.passwordMatch = async function(userSubmittedPassword, userPassword) {
   return await bcrypt.compare(userSubmittedPassword, userPassword);
+};
+
+userSchema.methods.changedPasswordAfter = function(JWTTimestamp) {
+  if (this.passwordChangedAt) {
+    const changedTimestamp = parseInt(
+      this.passwordChangedAt.getTime() / 1000,
+      10
+    );
+
+    return JWTTimestamp < changedTimestamp;
+  }
+
+  // False means NOT changed
+  return false;
 };
 
 userSchema.methods.createPasswordResetToken = function() {

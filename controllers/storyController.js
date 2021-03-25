@@ -6,21 +6,26 @@ const factory = require('./factory')
 
 exports.getStory = factory.getOne(Story, { path: 'userId' });
 exports.getStories = factory.getAll(Story, { path: 'userId' });
-exports.getDrafts = catchAsync(async (req, res) => {
-  const { userId } = req.body;
-  
-});
+
+exports.getPublished = (req, _, next) => {
+  req.query = { status: { $eq: "visible" } }
+  next()
+}
+exports.getDrafts = (req, _, next) => {
+  req.query = { status: { $eq: "draft" } }
+  next()
+}
+
 
 /*******************
 *******CREATE*******
 *******************/
 
-exports.createStory = catchAsync(async (req, res) => {
-  const { userId, content, status } = req.body;
-  console.log(req.body);
-  console.log(req.headers);
+exports.createStory = catchAsync(async (req, res, next) => {
+  const { content, status } = req.body;
 
-  await user.save({ validateBeforeSave: false });
+  const userId = req.user._id;
+  
   const newStory = await Story.create({
     userId,
     status,
@@ -30,13 +35,16 @@ exports.createStory = catchAsync(async (req, res) => {
 
   res.status(201).json({
     status: 'success',
-    data: { newStory },
+    data: newStory,
   });
 });
 
 exports.likeStory = catchAsync(async (req, res, next) => {
-  const { userId, type } = req.body;
+  const { type } = req.body;
   const storyId = req.params.id;
+  const userId = req.user._id.toString();
+
+  // const queryString = { $and: [{"likes.likeUser": userId}, {"_id": storyId}]}
 
   const story = await Story.findById(storyId);
   if (!story) return next(new AppError("Story not found", 404));
@@ -54,20 +62,23 @@ exports.likeStory = catchAsync(async (req, res, next) => {
   }
   await story.save();
 
+  const likes = story.likes
+
   res.status(200).json({
     status: 'success',
-    data: { likes: story.likes },
+    data: likes,
   });
 });
 
 exports.reportStory = catchAsync(async (_req, res, _next) => {
-  const { userId, reason } = req.body;
+  const { reason } = req.body;
   const storyId = req.params.id;
+  const userId = req.user._id.toString();
 
   const story = await Story.findById(storyId);
   if (!story) return next(new AppError("Story not found", 404));
 
-  if (story.report.reportDetails.find(report => report.reportedBy._id === userId))
+  if (story.report.reportDetails.find(report => report.reportedBy._id.toString() === userId))
     return next(new AppError("Already reported by user", 403));
 
   story.isReported = true,
@@ -79,11 +90,11 @@ exports.reportStory = catchAsync(async (_req, res, _next) => {
 
   await story.save();
 
+  const report = story.report
+
   res.status(200).json({
     status: 'success',
-    data: {
-      report: story.report
-    }
+    data: report
   });
 });
 
@@ -92,24 +103,22 @@ exports.reportStory = catchAsync(async (_req, res, _next) => {
 *******************/
 
 exports.editStory = catchAsync(async (req, res, next) => {
-  const { userId, content } = req.body;
+  const { content } = req.body;
   const storyId = req.params.id;
 
-  const user = await User.findById(userId).select('-originalContent');
-  if (!user || user?.accountStatus === 'inactive') return next(new AppError("User not found", 404));
-  if (user.accountStatus === 'banned') return next(new AppError("User is banned", 404));
+  const userId = req.user._id.toString();
 
   const story = await Story.findById(storyId);
-  const storyUserId = story.userId.toString();
+  const storyUserId = story.userId;
   
-  if (storyUserId !== userId) return next(new AppError("This isn't yours", 403));
+  if (storyUserId.toString() !== userId) return next(new AppError("This isn't yours", 403));
 
   story.content = content;
   const editedStory = await story.save();
 
   res.status(200).json({
     status: 'success',
-    data: { editedStory },
+    data: editedStory,
   });
 });
 
@@ -118,12 +127,9 @@ exports.editStory = catchAsync(async (req, res, next) => {
 *******************/
 
 exports.deleteStory = catchAsync(async (req, res, next) => {
-  const { userId } = req.body;
   const storyId = req.params.id;
 
-  const user = await User.findById(userId);
-  if (!user || user?.accountStatus === 'inactive') return next(new AppError("User not found", 404));
-  if (user.accountStatus === 'banned') return next(new AppError("User is banned", 404));
+  const userId = req.user._id.toString();
 
   const story = await Story.findById(storyId)
   const storyUserId = story.userId.toString();
@@ -135,7 +141,7 @@ exports.deleteStory = catchAsync(async (req, res, next) => {
 
   res.status(204).json({
     status: 'success',
-    data: { deletedStory }
+    data: deletedStory
   });
 });
 
@@ -145,7 +151,7 @@ exports.adminDeleteStory = catchAsync(async (req, res) => {
 
   res.status(204).json({
     status: 'success',
-    data: { deletedStory }
+    data: deletedStory
   });
 });
 
@@ -154,8 +160,10 @@ exports.adminDeleteStory = catchAsync(async (req, res) => {
 *******************/
 
 exports.createComment = catchAsync(async (req, res, next) => {
-  const { userId, content } = req.body;
+  const { content } = req.body;
   const storyId = req.params.id;
+
+  const userId = req.user._id;
 
   const story = await Story.findById(storyId);
   if (!story) return next(new AppError("Story not found", 404));
@@ -168,15 +176,18 @@ exports.createComment = catchAsync(async (req, res, next) => {
 
   await story.save()
 
+  const comments = story.comments
+  
   res.status(200).json({
     status: 'success',
-    data: { comments: story.comments }
+    data: comments,
   });
 });
 
 exports.editComment = catchAsync(async (req, res, next) => {
-  const { userId, commentId, content } = req.body;
+  const { commentId, content } = req.body;
   const storyId = req.params.id;
+  const userId = req.user._id.toString();
   if (!content) return next(new AppError("Missing body", 400));
 
   const story = await Story.findById(storyId);
@@ -193,16 +204,18 @@ exports.editComment = catchAsync(async (req, res, next) => {
   commentExists.content = content;
   
   await story.save();
+  const comments = story.comments
 
   res.status(200).json({
     status: 'success',
-    data: { comments: story.comments }
+    data: comments
   });
 });
 
 exports.deleteComment = catchAsync(async (req, res, next) => {
-  const { userId, commentId } = req.body;
+  const { commentId } = req.body;
   const storyId = req.params.id;
+  const userId = req.user._id.toString();
 
   const story = await Story.findById(storyId);
   if (!story) return next(new AppError("Story not found", 404));
@@ -216,10 +229,11 @@ exports.deleteComment = catchAsync(async (req, res, next) => {
   commentExists.visible = false;
 
   await story.save();
+  const comments = story.comments
 
   res.status(204).json({
     status: 'success',
-    data: { comments: story.comments }
+    data: comments
   });
 });
 
@@ -230,9 +244,10 @@ exports.adminDeleteComment = catchAsync(async (req, res) => {
   const story = await Story.findById(storyId);
   story.comments = story.comments.filter(comment => comment._id.toString() !== commentId);
   await story.save();
+  const comments = story.comments
 
   res.status(204).json({
     status: 'success',
-    data: { comments: story.comments }
+    data: comments
   });
 });
