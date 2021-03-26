@@ -11,6 +11,7 @@ exports.getPublished = (req, _, next) => {
   req.query = { status: { $eq: "visible" } }
   next()
 }
+
 exports.getDrafts = (req, _, next) => {
   const userId = req.user._id
   req.query = { $and: [

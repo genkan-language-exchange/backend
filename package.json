@@ -23,6 +23,7 @@
     "moment": "^2.29.1",
     "mongoose": "^5.11.11",
     "morgan": "^1.10.0",
+    "multer": "^1.4.2",
     "nodemailer": "^6.4.17",
     "validator": "^13.5.2",
     "xss-clean": "^0.1.1"

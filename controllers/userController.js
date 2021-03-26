@@ -38,22 +38,44 @@ exports.getUser = catchAsync(async (req, res, next) => {
 exports.getAllUsers = factory.getAll(User)
 
 exports.aliasGetAllUsers = catchAsync(async (req, _, next) => {
-  req.query.limit = '25';
-  req.query.fields = 'name,identifier,matchSettings';
+  req.query = {
+    accountStatus: { $eq: "verified" },
+    limit: '25',
+    sort: '-matchSettings.lastSeen',
+    fields: 'name,identifier,matchSettings'
+  }
   next();
 });
 
 exports.aliasGetNew = catchAsync(async (req, _, next) => {
-  req.query.limit = '25';
-  req.query.sort = '-matchSettings.accountCreated';
-  req.query.fields = 'name,identifier,matchSettings';
+  const threeDays = 1000 * 60 * 60 * 24 * 3
+  const threeDaysAgo = new Date(Date.now()-threeDays)
+  
+  req.query = {
+    $and: [
+      { accountStatus: { $eq: "verified" } },
+      { "matchSettings.lastSeen": { gte: threeDaysAgo } }
+    ],
+    limit: '25',
+    sort: '-matchSettings.accountCreated',
+    fields: 'name,identifier,matchSettings'
+  }
   next();
 });
 
 exports.aliasGetOnline = catchAsync(async (req, _, next) => {
-  req.query.limit = '25';
-  req.query.sort = '-matchSettings.lastSeen';
-  req.query.fields = 'name,identifier,matchSettings';
+  const thirtyMinutes = 1000 * 60 * 30
+  const halfHourAgo = new Date(Date.now()-thirtyMinutes)
+
+  req.query = {
+    $and: [
+      { accountStatus: { $eq: "verified" } },
+      { "matchSettings.lastSeen": { gte: halfHourAgo } }
+    ],
+    limit: '25',
+    sort: '-matchSettings.lastSeen',
+    fields: 'name,identifier,matchSettings'
+  }
   next();
 });
 
