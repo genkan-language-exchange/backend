@@ -93,6 +93,9 @@ storySchema.pre(/^find/, function(next) {
   next();
 });
 
+// storySchema.index({ status: 1 })
+
+storySchema.index({ "likes.likeUser": 1, "userId": 1 }, { unique: true })
 
 const Story = mongoose.model('Story', storySchema);
 

@@ -8,7 +8,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, 'User name is required'],
     lowercase: true,
-    validate: [validator.isAlphanumeric, 'Letters and numbers only please'],
+    maxlength: 20,
   },
   email: {
     type: String,
@@ -51,10 +51,6 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ['user', 'vip', 'admin', 'owner'],
     default: 'user',
-  },
-  sid: {
-    type: String,
-    select: false,
   },
   profile: {
     about: {

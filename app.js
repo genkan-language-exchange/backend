@@ -26,7 +26,7 @@ if (process.env.NODE_ENV === 'development') {
 
 // request rate limiting
 const limiter = rateLimit({
-  max: 100,
+  max: 1000,
   windowMs: 1000 * 60 * 60, // 1 hour
   message: 'Too many requests.'
 });

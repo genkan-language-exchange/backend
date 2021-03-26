@@ -12,7 +12,11 @@ exports.getPublished = (req, _, next) => {
   next()
 }
 exports.getDrafts = (req, _, next) => {
-  req.query = { status: { $eq: "draft" } }
+  const userId = req.user._id
+  req.query = { $and: [
+    {status: { $eq: "draft" } },
+    {userId: { $eq: userId } }
+  ]}
   next()
 }
 
@@ -21,16 +25,34 @@ exports.getDrafts = (req, _, next) => {
 *******CREATE*******
 *******************/
 
-exports.createStory = catchAsync(async (req, res, next) => {
-  const { content, status } = req.body;
-
+exports.createStory = catchAsync(async (req, res) => {
+  const { content, status, _id } = req.body;
   const userId = req.user._id;
   
-  const newStory = await Story.create({
+  let newStory;
+  if (_id != null) {
+    const existingDraft = await Story.findById(_id);
+    if (existingDraft) {
+      existingDraft.content = content;
+      existingDraft.originalContent = content;
+      existingDraft.status = status;
+      existingDraft.createdAt = Date.now();
+
+      newStory = await existingDraft.save();
+      res.status(200).json({
+        status: 'success',
+        data: newStory
+      }).end();
+      return;
+    };
+  };
+  
+  newStory = await Story.create({
     userId,
     status,
     content,
     originalContent: content,
+    createdAt: Date.now()
   });
 
   res.status(201).json({
@@ -43,8 +65,6 @@ exports.likeStory = catchAsync(async (req, res, next) => {
   const { type } = req.body;
   const storyId = req.params.id;
   const userId = req.user._id.toString();
-
-  // const queryString = { $and: [{"likes.likeUser": userId}, {"_id": storyId}]}
 
   const story = await Story.findById(storyId);
   if (!story) return next(new AppError("Story not found", 404));
@@ -62,7 +82,7 @@ exports.likeStory = catchAsync(async (req, res, next) => {
   }
   await story.save();
 
-  const likes = story.likes
+  const likes = story.likes;
 
   res.status(200).json({
     status: 'success',
@@ -109,9 +129,9 @@ exports.editStory = catchAsync(async (req, res, next) => {
   const userId = req.user._id.toString();
 
   const story = await Story.findById(storyId);
-  const storyUserId = story.userId;
+  const storyUserId = story.userId._id.toString();
   
-  if (storyUserId.toString() !== userId) return next(new AppError("This isn't yours", 403));
+  if (storyUserId !== userId) return next(new AppError("This isn't yours", 403));
 
   story.content = content;
   const editedStory = await story.save();
@@ -132,16 +152,15 @@ exports.deleteStory = catchAsync(async (req, res, next) => {
   const userId = req.user._id.toString();
 
   const story = await Story.findById(storyId)
-  const storyUserId = story.userId.toString();
+  const storyUserId = story.userId._id.toString();
 
   if (storyUserId !== userId) return next(new AppError("This isn't yours", 403));
 
   story.status = 'deleted';
-  const deletedStory = await story.save;
+  await story.save();
 
   res.status(204).json({
-    status: 'success',
-    data: deletedStory
+    status: 'success'
   });
 });
 
@@ -249,5 +268,12 @@ exports.adminDeleteComment = catchAsync(async (req, res) => {
   res.status(204).json({
     status: 'success',
     data: comments
+  });
+});
+
+exports.adminDeletedRemoved = catchAsync(async (_, res) => {
+  await Story.deleteMany({ "status": "deleted" })
+  res.status(204).json({
+    status: "success"
   });
 });
