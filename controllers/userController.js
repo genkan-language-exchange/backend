@@ -60,7 +60,7 @@ exports.aliasGetNew = catchAsync(async (req, _, next) => {
     $and: [
       { _id: { $ne: req.user._id }},
       { accountStatus: { $eq: "verified" } },
-      { "matchSettings.lastSeen": { gte: threeDaysAgo } }
+      { "matchSettings.accountCreated": { gte: threeDaysAgo } }
     ],
     limit: '5',
     sort: '-matchSettings.accountCreated',
