@@ -39,8 +39,12 @@ exports.getAllUsers = factory.getAll(User)
 
 exports.aliasGetAllUsers = catchAsync(async (req, _, next) => {
   req.query = {
-    accountStatus: { $eq: "verified" },
-    limit: '25',
+    ...req.query,
+    $and: [
+      { _id: { $ne: req.user._id }},
+      {accountStatus: { $eq: "verified" }},
+    ],
+    limit: '5',
     sort: '-matchSettings.lastSeen',
     fields: 'name,identifier,matchSettings'
   }
@@ -49,14 +53,16 @@ exports.aliasGetAllUsers = catchAsync(async (req, _, next) => {
 
 exports.aliasGetNew = catchAsync(async (req, _, next) => {
   const threeDays = 1000 * 60 * 60 * 24 * 3
-  const threeDaysAgo = new Date(Date.now()-threeDays)
+  const threeDaysAgo = new Date(Date.now() - threeDays)
   
   req.query = {
+    ...req.query,
     $and: [
+      { _id: { $ne: req.user._id }},
       { accountStatus: { $eq: "verified" } },
       { "matchSettings.lastSeen": { gte: threeDaysAgo } }
     ],
-    limit: '25',
+    limit: '5',
     sort: '-matchSettings.accountCreated',
     fields: 'name,identifier,matchSettings'
   }
@@ -65,14 +71,16 @@ exports.aliasGetNew = catchAsync(async (req, _, next) => {
 
 exports.aliasGetOnline = catchAsync(async (req, _, next) => {
   const thirtyMinutes = 1000 * 60 * 30
-  const halfHourAgo = new Date(Date.now()-thirtyMinutes)
+  const halfHourAgo = new Date(Date.now() - thirtyMinutes)
 
   req.query = {
+    ...req.query,
     $and: [
+      { _id: { $ne: req.user._id }},
       { accountStatus: { $eq: "verified" } },
       { "matchSettings.lastSeen": { gte: halfHourAgo } }
     ],
-    limit: '25',
+    limit: '5',
     sort: '-matchSettings.lastSeen',
     fields: 'name,identifier,matchSettings'
   }
