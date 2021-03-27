@@ -90,8 +90,8 @@ const userSchema = new mongoose.Schema({
   filterSettings: {
     ages: {
       type: Array,
-      default: [18, 100],
-      min: 18,
+      default: [18, 150],
+      min: 16,
     },
     genders: {
       type: Array,
@@ -101,6 +101,18 @@ const userSchema = new mongoose.Schema({
     resides: Array, // user can block people in same country as them
     languagesKnow: Array, // user can block anyone who doesn't know their target language
     languagesLearn: Array, // in the interest of allowing pure cultural exchange this can be empty
+    showOwnAge: {
+      type: Boolean,
+      default: true,
+    },
+    showOnlineStatus: {
+      type: Boolean,
+      default: true,
+    },
+    blurUntilMatch: {
+      type: Boolean,
+      default: true,
+    }
   },
   accountNotes: { // allow admin to add notes to account
     type: String,

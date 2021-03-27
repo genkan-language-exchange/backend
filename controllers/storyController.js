@@ -8,15 +8,28 @@ exports.getStory = factory.getOne(Story, { path: 'userId' });
 exports.getStories = factory.getAll(Story, { path: 'userId' });
 
 exports.getPublished = (req, _, next) => {
-  req.query = { status: { $eq: "visible" } }
+  req.query = {
+    ...req.query,
+    status: { $eq: "visible" },
+    limit: '25',
+    sort: '-createdAt',
+    fields: '-status -report'
+  }
   next()
 }
+
 exports.getDrafts = (req, _, next) => {
   const userId = req.user._id
-  req.query = { $and: [
-    {status: { $eq: "draft" } },
-    {userId: { $eq: userId } }
-  ]}
+  req.query = {
+    ...req.query,
+    $and: [
+      {status: { $eq: "draft" } },
+      {userId: { $eq: userId } }
+    ],
+    limit: '25',
+    sort: '-createdAt',
+    fields: '-status -report',    
+  }
   next()
 }
 
