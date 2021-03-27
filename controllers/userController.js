@@ -44,9 +44,9 @@ exports.aliasGetAllUsers = catchAsync(async (req, _, next) => {
       { _id: { $ne: req.user._id }},
       {accountStatus: { $eq: "verified" }},
     ],
-    limit: '5',
+    limit: '25',
     sort: '-matchSettings.lastSeen',
-    fields: 'name,identifier,matchSettings'
+    fields: 'name,identifier,matchSettings,role'
   }
   next();
 });
@@ -62,9 +62,9 @@ exports.aliasGetNew = catchAsync(async (req, _, next) => {
       { accountStatus: { $eq: "verified" } },
       { "matchSettings.accountCreated": { gte: threeDaysAgo } }
     ],
-    limit: '5',
+    limit: '25',
     sort: '-matchSettings.accountCreated',
-    fields: 'name,identifier,matchSettings'
+    fields: 'name,identifier,matchSettings,role'
   }
   next();
 });
@@ -80,9 +80,9 @@ exports.aliasGetOnline = catchAsync(async (req, _, next) => {
       { accountStatus: { $eq: "verified" } },
       { "matchSettings.lastSeen": { gte: halfHourAgo } }
     ],
-    limit: '5',
+    limit: '25',
     sort: '-matchSettings.lastSeen',
-    fields: 'name,identifier,matchSettings'
+    fields: 'name,identifier,matchSettings,role'
   }
   next();
 });
@@ -92,7 +92,13 @@ exports.updateMe = async (req, res, next) => {
   if (req.body.password || req.body.passwordConfirm) return next(new AppError('Wrong route for password updating', 400));
 
   // 2) clean the request
-  const filteredBody = filterBody(req.body, 'name', 'email', 'allowedGenders', 'gender', 'pronouns', 'nationality', 'residence', 'languageKnow', 'languageLearn');
+  const filteredMatch = filterBody(req.body.matchSettings, 'languageKnow', 'languageLearn', 'residence');
+  const filteredFilters = filterBody(req.body.filterSettings, 'ages', 'genders', 'nationalities', 'resides', 'languagesKnow', 'languagesLearn')
+
+  const filteredBody = {
+    ...filteredMatch,
+    ...filteredFilters,
+  }
 
   // 3) prepare options
   const options = {
