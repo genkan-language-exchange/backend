@@ -116,9 +116,13 @@ exports.login = catchAsync(async (req, res, next) => {
   // check if user exists
   const user = await User.findOne({ email }).select('+password');
 
-  if (!user) return res.status(401).json({
+  if (!user || !(await user.passwordMatch(password, user.password))) {
+    return next(new AppError('Be sure to provide both an email and password', 400));
+  }
+
+  if (!user) return res.status(400).json({
     status: "fail",
-    message: "User not found"
+    message: 'Be sure to provide both an email and password'
   });
 
   user.matchSettings.lastSeen = Date.now();
