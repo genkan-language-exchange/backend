@@ -93,7 +93,18 @@ exports.updateMe = async (req, res, next) => {
 
   // 2) clean the request
   const filteredMatch = filterBody(req.body.matchSettings, 'languageKnow', 'languageLearn', 'residence');
-  const filteredFilters = filterBody(req.body.filterSettings, 'ages', 'genders', 'nationalities', 'resides', 'languagesKnow', 'languagesLearn')
+  const filteredFilters = filterBody(req.body.filterSettings,
+    'showOwnIdentifier',
+    'showOwnAge',
+    'showOnlineStatus',
+    'blurUntilMatch',
+    'ages',
+    'genders',
+    'nationalities',
+    'resides',
+    'languagesKnow',
+    'languagesLearn'
+  )
 
   const filteredBody = {
     ...filteredMatch,

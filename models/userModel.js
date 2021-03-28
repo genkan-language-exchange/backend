@@ -101,6 +101,10 @@ const userSchema = new mongoose.Schema({
     resides: Array, // user can block people in same country as them
     languagesKnow: Array, // user can block anyone who doesn't know their target language
     languagesLearn: Array, // in the interest of allowing pure cultural exchange this can be empty
+    showOwnIdentifier: {
+      type: Boolean,
+      default: false,
+    },
     showOwnAge: {
       type: Boolean,
       default: true,
