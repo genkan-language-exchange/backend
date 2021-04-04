@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const roomSchema = new mongoose.Schema({
+const slowModeRoomSchema = new mongoose.Schema({
   members: [
     {
       type: mongoose.Schema.ObjectId,
@@ -8,18 +8,6 @@ const roomSchema = new mongoose.Schema({
       required: [true, 'A chatroom must have at least 1 member'],
     },
   ], // end of members
-  messagePermission: {
-    approver: {
-      type: mongoose.Schema.ObjectId,
-      ref: 'User',
-      required: true,
-    },
-    status: {
-      type: String,
-      enum: ['pending', 'approved', 'shadow', 'blocked'],
-      default: 'pending'
-    }
-  }, // end of messagePermission
   messages: [
     {
       from: {
@@ -27,16 +15,18 @@ const roomSchema = new mongoose.Schema({
         ref: 'User',
         required: [true, 'A message must contain a user id'],
       },
-      message: {
+      messageContent: {
         type: String,
         trim: true,
         required: [true, 'A message must have message content'],
       },
+      messageType: {
+        type: String,
+        enum: ['text', 'image', 'sticker', 'gif', 'link'],
+        default: 'text',
+      },
       readReceipt: {
-        sentAt: {
-          type: Date,
-          default: Date.now(),
-        },
+        sentAt: Date,
         read: {
           type: Boolean,
           default: false,
@@ -52,8 +42,30 @@ const roomSchema = new mongoose.Schema({
       }, // end of readReceipt
     },
   ], // end of messages
+  },
+  { // options
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
+);
+
+slowModeRoomSchema.pre(/^find/, function(next) {
+  this.populate([
+    {
+      path: 'members',
+      select: 'name identifier _id matchSettings accountStatus active role'
+    },
+  ]);
+  next();
 });
 
-const Room = mongoose.model('Room', roomSchema);
+slowModeRoomSchema.pre('save', function(next) {
+  const d = new Date();
+  const openableAt = d.setTime(d.getTime() + (1000 * 60 * 60 * 24))
+  this.readReceipt.openableAt = openableAt;
+  next();
+});
 
-module.exports = Room;
+const SlowModeRoom = mongoose.model('SlowModeRoom', slowModeRoomSchema);
+
+module.exports = SlowModeRoom;

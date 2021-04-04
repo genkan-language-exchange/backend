@@ -3,6 +3,7 @@ const multer = require('multer');
 
 const userController = require('./../controllers/userController');
 const authController = require('./../controllers/authController');
+const photoController = require('./../controllers/photoController');
 
 const upload = multer()
 
@@ -25,6 +26,7 @@ router.post('/revalidate', authController.resendValidationEmail);
 
 router.use(authController.protect)
 
+router.post('/setAvatar', upload.single('userAvatar'), photoController.setAvatar);
 router.patch('/updatePassword', authController.updatePassword);
 router.patch('/updateMe', userController.updateMe);
 router.delete('/deleteMe', userController.deleteMe);

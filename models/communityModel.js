@@ -1,6 +1,4 @@
 const mongoose = require('mongoose');
-const User = require('./userModel');
-const AppError = require('../utils/appError');
 
 /*
 ****************
@@ -10,7 +8,7 @@ NOTES
 
 /*
 What:
-Group for user shared interests.
+Group for user shared interests (from specific anime/video game titles to general hobbies)
 
 Why:
 Users can tag a story with a community.
@@ -22,12 +20,28 @@ Allow users to create custom communities, but require admin approval.
 */
 
 const communitySchema = new mongoose.Schema({
-  title: {
+  communityName: {
     type: String,
-    required: [true, 'A community must have a name'],
+    required: true,
+    unique: true,
   },
+  tags: [
+    {
+      type: String,
+      validate: {
+        validator: function(val) {
+          return this.tags.contains(val)
+        },
+        message: "This community already has that tag",
+      }
+    }
+  ],
   image: String,
   active: {
+    type: Boolean,
+    default: false,
+  },
+  private: {
     type: Boolean,
     default: false,
   },
