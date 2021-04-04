@@ -17,13 +17,13 @@ const filterBody = (obj, ...allowedFields) => {
 exports.getUser = catchAsync(async (req, res, next) => {
   let user;
   if (req.params.id) {
-    user = await User.findById(req.params.id).select('-__v -password'); 
+    user = await User.findById(req.params.id).select('-__v -password -email'); 
   } else {
     const filter = {
       name: req.body.name,
       identifier: req.body.identifier
     };
-    user = await User.find(filter).select('-__v -password');
+    user = await User.find(filter).select('-__v -password -email');
   }
   
   if (!user || user?.accountStatus === 'inactive') return next(new AppError('User not found', 404));

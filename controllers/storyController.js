@@ -14,9 +14,24 @@ exports.getPublished = (req, _, next) => {
     limit: '25',
     sort: '-createdAt',
     fields: '-status -report'
-  }
-  next()
-}
+  };
+  next();
+};
+
+exports.getUserStories = (req, _, next) => {
+  const userId = req.body._id
+  req.query = {
+    ...req.query,
+    $and: [
+      {status: { $eq: "visible" } },
+      {userId: { $eq: userId } }
+    ],
+    limit: '25',
+    sort: '-createdAt',
+    fields: '-status -report',
+  };
+  next();
+};
 
 exports.getDrafts = (req, _, next) => {
   const userId = req.user._id
@@ -29,9 +44,9 @@ exports.getDrafts = (req, _, next) => {
     limit: '25',
     sort: '-createdAt',
     fields: '-status -report',    
-  }
-  next()
-}
+  };
+  next();
+};
 
 
 /*******************

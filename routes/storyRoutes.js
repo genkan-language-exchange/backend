@@ -13,6 +13,7 @@ router.use(authController.protect)
 router.get('/', storyController.getPublished, storyController.getStories);
 router.get('/my-drafts', storyController.getDrafts, storyController.getStories);
 router.post('/', storyController.createStory);
+router.post('/user-stories', storyController.getUserStories, storyController.getStories)
 
 router.delete('/comment/admin/:id', storyController.adminDeleteComment);
 router.put('/comment/delete/:id', storyController.deleteComment);
