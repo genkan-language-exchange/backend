@@ -203,7 +203,6 @@ exports.forgottenPassword = catchAsync(async (req, res, next) => {
   await user.save({ validateBeforeSave: false });
 
   // 3) send email with token to user
-  // const validationURL = `https://genkan.app/verify/${validationToken}`;
   const resetURL = `https://genkan.app/resetPassword/${resetToken}`;
 
   const message = `Forgot your password? Submit a PATCH request with your new password and confirmation password to: ${resetURL}\nYou can ignore this email if you did not forget your password.`;
@@ -291,7 +290,7 @@ exports.resendValidationEmail = catchAsync(async (req, res, next) => {
   // const validationURL = `${req.protocol}://${req.get('host')}/api/v1/users/validation/${validationToken}`;
   const validationURL = `https://genkan.app/verify/${validationToken}`;
 
-  const message = `Click this link to finalise the creation of your account: ${validationURL}\nYou can ignore this email if you did not create an account with us.`;
+  const message = `Click this link to finalize the creation of your account: ${validationURL}\nYou can ignore this email if you did not create an account with us.`;
 
   try {
     await sendEmail({
