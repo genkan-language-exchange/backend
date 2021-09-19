@@ -14,6 +14,13 @@ const filterBody = (obj, ...allowedFields) => {
   return newObj;
 };
 
+exports.ping = catchAsync(async (req, res) => {
+  const user = req.user;
+  user.matchSettings.lastSeen = Date.now();
+  await user.save({ validateBeforeSave: false });
+  res.status(200).json({ success: true });
+});
+
 exports.getUser = catchAsync(async (req, res, next) => {
   let user;
   if (req.params.id) {

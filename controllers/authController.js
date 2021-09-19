@@ -86,7 +86,7 @@ exports.signup = catchAsync(async (req, res, next) => {
   // const validationURL = `${req.protocol}://${req.get('host')}/api/v1/users/validation/${validationToken}`;
   const validationURL = `https://genkan.app/verify/${validationToken}`;
 
-  const message = `Click this link to finalise the creation of your account: ${validationURL}\n You can ignore this email if you did not create an account with us.`;
+  const message = `Click this link to finalise the creation of your account: ${validationURL}\n You may ignore this email if you did not create an account with us.`;
 
   try {
     await sendEmail({
@@ -203,9 +203,9 @@ exports.forgottenPassword = catchAsync(async (req, res, next) => {
   await user.save({ validateBeforeSave: false });
 
   // 3) send email with token to user
-  const resetURL = `https://genkan.app/resetPassword/${resetToken}`;
+  const resetURL = `https://genkan.app/reset/${resetToken}`;
 
-  const message = `Forgot your password? Submit a PATCH request with your new password and confirmation password to: ${resetURL}\nYou can ignore this email if you did not forget your password.`;
+  const message = `Forgot your password? Visit <a href="${resetURL}">this link</a> within the next 30 minutes to change your password!\nYou may ignore this email if you did not request a password reset or if you remembered your password.`;
 
   try {
     await sendEmail({
@@ -227,13 +227,27 @@ exports.forgottenPassword = catchAsync(async (req, res, next) => {
   }
 });
 
+exports.testResetPasswordToken = catchAsync(async (req, res, next) => {
+  // 1) get user from token
+  const hashedToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
+  
+  const user = await User.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gt: Date.now() }
+  });
+
+  // 2) if token is fresh and user exists, set new password
+  if (!user) return next(new AppError('Bad Token', 400));
+  else res.status(200);
+});
+
 exports.resetPassword = catchAsync(async (req, res, next) => {
   // 1) get user from token
   const hashedToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
 
   const user = await User.findOne({
     passwordResetToken: hashedToken,
-    passwordResetExpires: {$gt: Date.now()}
+    passwordResetExpires: { $gt: Date.now() }
   });
 
   // 2) if token is fresh and user exists, set new password
