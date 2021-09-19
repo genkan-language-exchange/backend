@@ -14,6 +14,7 @@ router.post('/login', authController.login);
 router.get('/logout', authController.logout);
 
 router.post('/forgotPassword', authController.forgottenPassword);
+router.get('/testResetPasswordToken/:token', authController.testResetPasswordToken);
 router.patch('/resetPassword/:token', authController.resetPassword);
 
 
@@ -25,7 +26,7 @@ router.post('/revalidate', authController.resendValidationEmail);
 // ****************
 
 router.use(authController.protect)
-
+router.get('/ping', userController.ping);
 router.post('/setAvatar', upload.single('userAvatar'), photoController.setAvatar);
 router.patch('/updatePassword', authController.updatePassword);
 router.patch('/updateMe', userController.updateMe);
