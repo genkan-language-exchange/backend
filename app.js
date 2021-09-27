@@ -13,6 +13,7 @@ const globalErrorHandler = require('./controllers/errorController');
 const userRouter = require('./routes/userRoutes');
 const slowModeRoomRouter = require('./routes/slowModeRoomRoutes');
 const storyRouter = require('./routes/storyRoutes');
+const lessonRouter = require('./routes/lessonRoutes');
 
 const app = express();
 
@@ -66,6 +67,7 @@ app.use('/api/v1/users', userRouter);
 app.use('/api/v1/sm-room', slowModeRoomRouter);
 // app.use('/api/v1/rt-room', roomRouter);
 app.use('/api/v1/stories', storyRouter);
+app.use('/api/v1/lessons', lessonRouter);
 
 app.get('/', (req, res) => {
   res.status(200)
@@ -75,7 +77,6 @@ app.get('/', (req, res) => {
 // route fallback
 app.all('*', (req, _, next) => {
   const errMessage = `${req.originalUrl} is not defined`;
-  // express assumes that any argument in next() is an error
   next(new AppError(errMessage, 404));
 });
 

@@ -96,8 +96,9 @@ exports.likeStory = catchAsync(async (req, res, next) => {
 
   const story = await Story.findById(storyId);
   if (!story) return next(new AppError("Story not found", 404));
+  if (story.userId._id.toString() === req.user._id.toString()) return next(new AppError("Cannot like own story", 400));
 
-  const liked = story.likes.find(like => like.likeUser._id.toString() === userId);
+  const liked = story.likes.filter(like => like.likeUser != null || like.likeUser != undefined).find(like => like.likeUser._id.toString() === userId);
 
   if (liked) {
     story.likes = story.likes.filter(like => like.likeUser._id.toString() !== userId);

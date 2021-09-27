@@ -15,6 +15,7 @@ const filterBody = (obj, ...allowedFields) => {
 };
 
 exports.ping = catchAsync(async (req, res) => {
+  console.log("PING")
   const user = req.user;
   user.matchSettings.lastSeen = Date.now();
   await user.save({ validateBeforeSave: false });
@@ -25,6 +26,10 @@ exports.getUser = catchAsync(async (req, res, next) => {
   let user;
   if (req.params.id) {
     user = await User.findById(req.params.id).select('-__v -password -email'); 
+  } else if (req.query.self) {
+    // return a fresh copy of own document
+    // user = await User.findById(req.user._id).select('-__v -password -email');
+    user = req.user
   } else {
     const filter = {
       name: req.body.name,

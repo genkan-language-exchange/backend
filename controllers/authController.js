@@ -176,6 +176,11 @@ exports.protect = catchAsync(async (req, _, next) => {
   next();
 });
 
+exports.requiresVerified = catchAsync(async (req, _, next) => {
+  if (!req.user.active || req.user.accountStatus !== "verified" ) return next(new AppError("User not verified", 403));
+  next()
+})
+
 exports.restrictTo = (...roles) => {
   // roles ['user', 'vip', 'admin']
   return (req, _, next) => {

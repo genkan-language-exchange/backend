@@ -15,8 +15,8 @@
       "age": 20,
       "birthday": "2000-11-30",
       "gender": "male",
-      "languageKnow": ["Japanese"],
-      "languageLearn": ["English"],
+      "languageKnow": [["Japanese", 3]],
+      "languageLearn": [["English", 1]],
       "nationality": "JP",
       "residence": "Japan"
     },
@@ -25,8 +25,8 @@
       "genders": ["male","female","non-binary"],
       "nationalities": ["US","CA","UK","AU"],
       "resides": ["America","England","Canada","Australia","New Zealand"],
-      "languagesSpoken": ["English"],
-      "languagesStudy": ["Japanese"]
+      "languagesSpoken": [["English", 3]],
+      "languagesStudy": [["Japanese", 1]]
     }
   },
   {
@@ -45,8 +45,8 @@
       "age": 30,
       "birthday": "1990-3-21",
       "gender": "female",
-      "languageKnow": ["Korean"],
-      "languageLearn": ["English"],
+      "languageKnow": [["Korean", 3]],
+      "languageLearn": [["English", 2]],
       "nationality": "KR",
       "residence": "South Korea"
     }
@@ -67,8 +67,8 @@
       "age": 19,
       "birthday": "2001-4-15",
       "gender": "male",
-      "languageKnow": ["English"],
-      "languageLearn": ["Spanish"],
+      "languageKnow": [["English", 3]],
+      "languageLearn": [["Spanish", 1]],
       "nationality": "US",
       "residence": "USA"
     }
@@ -89,8 +89,8 @@
       "age": 24,
       "birthday": "1998-9-13",
       "gender": "female",
-      "languageKnow": ["Vietnamese"],
-      "languageLearn": ["English"],
+      "languageKnow": [["Vietnamese", 3]],
+      "languageLearn": [["English", 2]],
       "nationality": "Vietnamese",
       "residence": "Vietnam"
     }
@@ -111,8 +111,8 @@
       "age": 20,
       "birthday": "2000-9-13",
       "gender": "female",
-      "languageKnow": ["Mandarin"],
-      "languageLearn": ["English"],
+      "languageKnow": [["Mandarin", 3]],
+      "languageLearn": [["English", 1]],
       "nationality": "Taiwanese",
       "residence": "Taiwan"
     }
@@ -134,8 +134,8 @@
       "age": 50,
       "birthday": "1971-1-1",
       "gender": "non-binary",
-      "languageKnow": ["English"],
-      "languageLearn": ["Spanish"],
+      "languageKnow": [["English", 3]],
+      "languageLearn": [["Spanish", 3]],
       "nationality": "CA",
       "residence": "Canada"
     }
@@ -158,8 +158,8 @@
       "age": 50,
       "birthday": "1971-1-1",
       "gender": "non-binary",
-      "languageKnow": ["English"],
-      "languageLearn": ["Spanish"],
+      "languageKnow": [["English", 3]],
+      "languageLearn": [["Spanish", 0]],
       "nationality": "CA",
       "residence": "Canada"
     }
@@ -182,8 +182,8 @@
       "age": 50,
       "birthday": "1971-1-1",
       "gender": "male",
-      "languageKnow": ["English"],
-      "languageLearn": ["Spanish"],
+      "languageKnow": [["English", 3]],
+      "languageLearn": [["Spanish", 0]],
       "nationality": "CA",
       "residence": "Canada"
     }
@@ -204,32 +204,10 @@
       "age": 21,
       "birthday": "2000-1-1",
       "gender": "non-binary",
-      "languageKnow": ["English"],
-      "languageLearn": ["Japanese"],
+      "languageKnow": [["English", 3]],
+      "languageLearn": [["Japanese", 2]],
       "nationality": "US",
       "residence": "USA"
-    }
-  },
-  {
-    "name":"userWithANameThatIsTooLong",
-    "email":"bobbylongname@example.com",
-    "identifier": "9999",
-    "password":"password",
-    "passwordConfirm":"password",
-    "accountStatus": "verified",
-    "profile": {
-      "about": "",
-      "interests": [],
-      "languageGoal": ""
-    },
-    "matchSettings": {
-      "age": 18,
-      "birthday": "2003-3-15",
-      "gender": "male",
-      "languageKnow": ["French"],
-      "languageLearn": ["English"],
-      "nationality": "Canadian",
-      "residence": "England"
     }
   },
   {
@@ -248,8 +226,8 @@
       "age": 32,
       "birthday": "1988-3-15",
       "gender": "male",
-      "languageKnow": ["English"],
-      "languageLearn": ["French"],
+      "languageKnow": [["English", 3]],
+      "languageLearn": [["French", 2]],
       "nationality": "UK",
       "residence": "England"
     }
@@ -270,8 +248,8 @@
       "age": 45,
       "birthday": "1975-6-12",
       "gender": "male",
-      "languageKnow": ["French"],
-      "languageLearn": ["German"],
+      "languageKnow": [["French", 3]],
+      "languageLearn": [["German", 0]],
       "nationality": "FR",
       "residence": "France"
     }
