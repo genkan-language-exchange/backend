@@ -2,9 +2,13 @@ const mongoose = require('mongoose')
 const Widget = require('./widgetModel')
 
 const tableSchema = new mongoose.Schema({
-  content: [
-    [String],
-  ],
+  content: {
+    type: Array,
+    default: [
+      ["", ""],
+      ["", ""],
+    ]
+  },
   hasHead: {
     type: Boolean,
     default: true,
