@@ -9,19 +9,19 @@ const router = express.Router()
 // *****************************
 
 router.use(authController.protect) // require JWT
-router.get('/:language', lessonController.getPublished, lessonController.getLessonsForLanguage)
+router.get('/all/:language', lessonController.getPublished, lessonController.getLessonsForLanguage)
 router.get(
-  '/:language/MyLessons', // when viewing own lessons to edit
+  '/MyLessons', // when viewing own lessons to edit
   lessonController.getByUser,
   lessonController.getLessonsForLanguage
 )
 router.get(
-  '/:language/UserLessons', // when viewing a user's profile
+  '/UserLessons', // when viewing a user's profile
   lessonController.getPublished,
   lessonController.getByUser,
   lessonController.getLessonsForLanguage
 )
-router.get('/:language/:id', lessonController.getLesson)
+router.get('/single/:id', lessonController.getLesson)
 
 router.use(
   authController.requiresVerified, // require email verification
@@ -29,7 +29,7 @@ router.use(
 )
 
 // lesson
-router.post('/new', lessonController.createLesson)
+router.post('/:language/new', lessonController.createLesson)
 router.patch('/:id/edit', lessonController.updateLesson)
 
 // widgets

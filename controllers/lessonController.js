@@ -14,7 +14,7 @@ exports.getPublished = (req, _, next) => {
   req.query = {
     ...req.query,
     status: { $eq: "published" },
-    language: { $eq: req.params.language },
+    language: { $eq: req.query.language },
     limit: '25',
     sort: '-updatedAt',
     fields: '-status'
@@ -25,6 +25,7 @@ exports.getPublished = (req, _, next) => {
 exports.getByUser = (req, _, next) => {
   req.query = {
     ...req.query,
+    language: { $eq: req.query.language },
     teacher: { $eq: req.user._id},
   };
   next();
@@ -35,7 +36,15 @@ exports.getLessonsForLanguage = factory.getAll(Lesson)
 
 exports.createLesson = catchAsync(async (req, res) => {
   const teacher = req.user._id
-  const { language } = req.body
+  const { language } = req.params
+
+  const userHasDrafts = await Lesson.find({ teacher, language, status: { $eq: 'draft' } })
+  if (userHasDrafts.length) {
+    return res.json({
+      success: false,
+      message: "DRAFT_EXISTS"
+    })
+  }
   
   // initialize a blank lesson in order to return the _id to the user
   // they will then use this _id and apply updates as they add widgets
@@ -47,7 +56,7 @@ exports.createLesson = catchAsync(async (req, res) => {
   })
 })
 
-exports.updateLesson = catchAsync(async (req, res) => {
+exports.updateLesson = catchAsync(async (req, res, next) => {
   const _id = req.params.id
   const teacher = req.user._id
   const { title, widgets, status } = req.body
@@ -75,33 +84,45 @@ exports.updateLesson = catchAsync(async (req, res) => {
 
 })
 
-exports.addWidgetToLesson = catchAsync(async (req, res) => {
+exports.addWidgetToLesson = catchAsync(async (req, res, next) => {
   const _id = req.params.id
   const teacher = req.user._id
   const { type } = req.body
 
   const lesson = await Lesson.findOne({ _id, teacher })
-  if (!lesson) return next(new AppError(`Could not find lesson with id ${_id}`, 404))
+  if (!lesson) {
+    return res.json({
+      success: false,
+      message: "RESOURCE_NOT_FOUND"
+    })
+  }
 
+  const availableWidgets = ['TableWidget', 'TextWidget', 'TitleWidget', 'TranslationWidget']
+  if (!availableWidgets.includes(type)) {
+    return res.json({
+      success: false,
+      message: "UNKNOWN_TYPE"
+    })
+  }
   let widget
   switch (type) {
-    case 'table':
-      widget = await TableWidget.create()
+    case 'TableWidget':
+      widget = new TableWidget()
       break
-    case 'text':
-      widget = await TextWidget.create()
+    case 'TextWidget':
+      widget = new TextWidget()
       break
-    case 'title':
-      widget = await TitleWidget.create()
+    case 'TitleWidget':
+      widget = new TitleWidget()
       break
-    case 'translation':
-      widget = await TranslationWidget.create()
+    case 'TranslationWidget':
+      widget = new TranslationWidget()
       break
     default:
       return
   }
   
-  widget.createdBy = teacher.toString()
+  widget.createdBy = teacher
   widget.forLesson = lesson._id.toString()
 
   await widget.save()
@@ -115,7 +136,7 @@ exports.addWidgetToLesson = catchAsync(async (req, res) => {
   })
 })
 
-exports.editWidget = catchAsync(async (req, res) => {
+exports.editWidget = catchAsync(async (req, res, next) => {
   const _id = req.params.id
 
   const widget = await Widget.findById(_id)
@@ -136,6 +157,8 @@ exports.editWidget = catchAsync(async (req, res) => {
   }
   widget.content = content
   await widget.save()
+
+  await Lesson.findByIdAndUpdate(widget.forLesson, { updatedAt: Date.now() })
 
   res.status(200).json({
     success: true,

@@ -21,14 +21,13 @@ const lessonSchema = new mongoose.Schema({
     enum: ['draft', 'published', 'private', 'deleted'],
     default: 'draft',
   },
-  createdAt: { // should be set the first time it's published
-    type: Date,
-    default: Date.now(),
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now(),
-  }
+  createdAt: Date, // should be set the first time it's published
+  updatedAt: Date,
+})
+
+lessonSchema.pre('save', function(next) {
+  this.updatedAt = Date.now()
+  next()
 })
 
 lessonSchema.pre(/^find/, function(next) {
