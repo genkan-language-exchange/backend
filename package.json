@@ -14,6 +14,7 @@
     "bcryptjs": "^2.4.3",
     "cloudinary": "^1.25.1",
     "cors": "^2.8.5",
+    "cron": "^1.8.2",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "express-mongo-sanitize": "^2.0.2",
@@ -26,6 +27,7 @@
     "morgan": "^1.10.0",
     "multer": "^1.4.2",
     "nodemailer": "^6.4.17",
+    "socket.io": "^4.2.0",
     "validator": "^13.5.2",
     "xss-clean": "^0.1.1"
   },

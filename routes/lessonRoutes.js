@@ -9,7 +9,8 @@ const router = express.Router()
 // *****************************
 
 router.use(authController.protect) // require JWT
-router.get('/all/:language', lessonController.getPublished, lessonController.getLessonsForLanguage)
+router.get('/all', lessonController.getPublished, lessonController.getLessonsForLanguage)
+router.get('/count', lessonController.getLessonCountForLanguage)
 router.get(
   '/MyLessons', // when viewing own lessons to edit
   lessonController.getByUser,
@@ -34,7 +35,8 @@ router.patch('/:id/edit', lessonController.updateLesson)
 
 // widgets
 router.post('/:id/widget', lessonController.addWidgetToLesson)
-router.patch('/:id/widget/edit', lessonController.editWidget)
+router.patch('/:id/widget', lessonController.editWidget)
+router.delete('/:id/widget', lessonController.deleteWidget)
 
 // ************
 // ADMIN ROUTES
