@@ -21,6 +21,11 @@ const lessonSchema = new mongoose.Schema({
     enum: ['draft', 'published', 'private', 'deleted'],
     default: 'draft',
   },
+  type: {
+    type: String,
+    enum: ['culture', 'language'],
+    default: 'language',
+  },
   createdAt: Date, // should be set the first time it's published
   updatedAt: Date,
 })

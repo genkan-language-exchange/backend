@@ -13,11 +13,11 @@ const TranslationWidget = require('../models/lesson/widgets/translationWidget')
 exports.getPublished = (req, _, next) => {
   req.query = {
     ...req.query,
-    status: { $eq: "published" },
+    status: { $eq: "published", $ne: "deleted" },
     language: { $eq: req.query.language },
+    type: { $eq: req.query.type },
     limit: '25',
-    sort: '-updatedAt',
-    fields: '-status'
+    sort: 'updatedAt',
   };
   next();
 };
@@ -25,6 +25,8 @@ exports.getPublished = (req, _, next) => {
 exports.getByUser = (req, _, next) => {
   req.query = {
     ...req.query,
+    status: { $ne: "deleted" },
+    sort: 'createdAt',
     language: { $eq: req.query.language },
     teacher: { $eq: req.user._id},
   };
@@ -33,6 +35,16 @@ exports.getByUser = (req, _, next) => {
 
 exports.getLesson = factory.getOne(Lesson)
 exports.getLessonsForLanguage = factory.getAll(Lesson)
+
+exports.getLessonCountForLanguage = catchAsync(async (req, res) => {
+  const { language, type } = req.query
+  const lesson_count = await Lesson.count({ language, status: { $ne: 'draft' }, type: { $eq: type }})
+
+  res.status(200).json({
+    success: true,
+    lesson_count
+  })
+})
 
 exports.createLesson = catchAsync(async (req, res) => {
   const teacher = req.user._id
@@ -59,7 +71,7 @@ exports.createLesson = catchAsync(async (req, res) => {
 exports.updateLesson = catchAsync(async (req, res, next) => {
   const _id = req.params.id
   const teacher = req.user._id
-  const { title, widgets, status } = req.body
+  const { title, widgets, status, type } = req.body
   const updatedAt = Date.now()
 
   const lesson = await Lesson.findOne({ _id, teacher })
@@ -67,6 +79,7 @@ exports.updateLesson = catchAsync(async (req, res, next) => {
   if (lesson) {
     lesson.title = title
     lesson.status = status
+    lesson.type = type
     lesson.widgets = widgets
     lesson.updatedAt = updatedAt
 
@@ -164,6 +177,10 @@ exports.editWidget = catchAsync(async (req, res, next) => {
     success: true,
     widget
   })
+})
+
+exports.deleteWidget= catchAsync(async (req, res, next) => {
+  res.status(418).json({ success: true })
 })
 
 /* TODO

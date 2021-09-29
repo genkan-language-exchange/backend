@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
+const { createServer } = require("http")
+const { Server } = require("socket.io")
 
 process.on('uncaughtException', (err) => {
   console.error(err.name);
@@ -43,6 +45,18 @@ const server = app.listen(port, () => {
   // timedFunction();
   console.log(`App running on port ${port}...`);
 });
+
+// const httpServer = createServer(app)
+// const io = new Server(httpServer, {
+//   cors: true,
+//   origins: ["http://localhost:8080"],
+// })
+
+// io.on("connection", (socket) => {
+//   console.log(socket)
+// })
+
+// httpServer.listen(port)
 
 process.on('unhandledRejection', (err) => {
   console.error(err.name);
