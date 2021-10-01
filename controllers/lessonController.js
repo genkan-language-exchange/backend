@@ -13,7 +13,7 @@ const TranslationWidget = require('../models/lesson/widgets/translationWidget')
 exports.getPublished = (req, _, next) => {
   req.query = {
     ...req.query,
-    status: { $eq: "published", $ne: "deleted" },
+    status: { $eq: "published" },
     language: { $eq: req.query.language },
     type: { $eq: req.query.type },
     limit: '25',
@@ -38,7 +38,7 @@ exports.getLessonsForLanguage = factory.getAll(Lesson)
 
 exports.getLessonCountForLanguage = catchAsync(async (req, res) => {
   const { language, type } = req.query
-  const lesson_count = await Lesson.count({ language, status: { $ne: 'draft' }, type: { $eq: type }})
+  const lesson_count = await Lesson.count({ language, status: { $eq: 'published' }, type: { $eq: type }})
 
   res.status(200).json({
     success: true,
