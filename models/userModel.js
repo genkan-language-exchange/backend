@@ -63,7 +63,7 @@ const userSchema = new mongoose.Schema({
       type: String,
     },
   },
-  matchSettings: {
+  matchSettings: { // user's own information
     accountCreated: { // user can block new accounts made within up to 1 month from sending message
       type: Date,
       default: Date.now(),
@@ -84,10 +84,20 @@ const userSchema = new mongoose.Schema({
     },
     nationality: String,
     residence: String,
-    languageKnow: Array,
-    languageLearn: Array,
+    languageKnow: [
+      {
+        language: String,
+        level: Number,
+      }
+    ],
+    languageLearn: [
+      {
+        language: String,
+        level: Number,
+      }
+    ],
   },
-  filterSettings: {
+  filterSettings: { // the type of study partner the user wants to find
     ages: {
       type: Array,
       default: [18, 150],

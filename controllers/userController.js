@@ -1,3 +1,4 @@
+const gravatar = require('gravatar')
 const User = require('../models/userModel');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
@@ -25,7 +26,7 @@ exports.ping = catchAsync(async (req, res) => {
 exports.getUser = catchAsync(async (req, res, next) => {
   let user;
   if (req.params.id) {
-    user = await User.findById(req.params.id).select('-__v -password -email'); 
+    user = await User.findById(req.params.id).select('-__v -password');
   } else if (req.query.self) {
     // return a fresh copy of own document
     // user = await User.findById(req.user._id).select('-__v -password -email');
@@ -35,15 +36,25 @@ exports.getUser = catchAsync(async (req, res, next) => {
       name: req.body.name,
       identifier: req.body.identifier
     };
-    user = await User.find(filter).select('-__v -password -email');
+    user = await User.find(filter).select('-__v -password');
   }
   
   if (!user || user?.accountStatus === 'inactive') return next(new AppError('User not found', 404));
   if (user.accountStatus === 'banned') return next(new AppError('User is banned', 404));
 
+  let gUrl
+  if (!req.query.self) {
+    gUrl = gravatar.url(user[0].email)
+    user[0].email = undefined
+  } else {
+    gUrl = gravatar.url(user.email)
+    user.email = undefined
+  }
+
   res.status(200).json({
     status: 'success',
     data: user,
+    gravatar: gUrl,
   });
 });
 
@@ -54,7 +65,7 @@ exports.aliasGetAllUsers = catchAsync(async (req, _, next) => {
     ...req.query,
     $and: [
       { _id: { $ne: req.user._id }},
-      {accountStatus: { $eq: "verified" }},
+      { accountStatus: { $eq: "verified" }},
     ],
     limit: '25',
     sort: '-matchSettings.lastSeen',
