@@ -16,14 +16,6 @@ const friendsListSchema = new mongoose.Schema({
         required: true,
       },
       friendsSince: Date,
-      // realTimeChatRoomId: {
-        // type: mongoose.Schema.ObjectId,
-        // ref: ''
-      // },
-      // slowModeChatRoomId: {
-        // type: mongoose.Schema.ObjectId,
-        // ref: ''
-      // },
     }
   ],
 },

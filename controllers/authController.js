@@ -8,6 +8,7 @@ const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
 const getIdentifier = require('../utils/identifier');
 const User = require('../models/userModel');
+const Notification = require('../models/notifications/notificationsModel')
 
 const createSendToken = (user, statusCode, res) => {
   const token = genToken(user._id);
@@ -101,6 +102,16 @@ exports.signup = catchAsync(async (req, res, next) => {
 
     return next(new AppError('Could not send verification email', 500));
   }
+
+  Notification.create({
+    for: newUser._id,
+    title: `Welcome to Genkan, ${newUser.name}!`,
+    content: "You'll need to verify your account before you can interact with other users!\nCheck the inbox of the email address you registered with.",
+    contentType: "system",
+    createdAt: Date.now(),
+    shouldClean: true,
+    cleanAt: Date.now() + (1000 * 60 * 60 * 24 * 7)
+   })
 
   createSendToken(newUser, 201, res);
 });

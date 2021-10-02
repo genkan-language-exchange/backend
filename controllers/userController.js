@@ -29,8 +29,8 @@ exports.getUser = catchAsync(async (req, res, next) => {
     user = await User.findById(req.params.id).select('-__v -password');
   } else if (req.query.self) {
     // return a fresh copy of own document
-    // user = await User.findById(req.user._id).select('-__v -password -email');
-    user = req.user
+    user = await User.findById(req.user._id).select('-__v -password -email');
+    // user = req.user
   } else {
     const filter = {
       name: req.body.name,
@@ -42,7 +42,7 @@ exports.getUser = catchAsync(async (req, res, next) => {
   if (!user || user?.accountStatus === 'inactive') return next(new AppError('User not found', 404));
   if (user.accountStatus === 'banned') return next(new AppError('User is banned', 404));
 
-  let gUrl
+  let gUrl = ""
   if (!req.query.self) {
     gUrl = gravatar.url(user[0].email)
     user[0].email = undefined

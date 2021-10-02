@@ -74,12 +74,16 @@ exports.createStory = catchAsync(async (req, res) => {
       return;
     };
   };
+
+  const subscribed = []
+  subscribed.push(userId)
   
   newStory = await Story.create({
     userId,
     status,
     content,
     originalContent: content,
+    subscribed,
     createdAt: Date.now()
   });
 

@@ -16,12 +16,16 @@ const storySchema = new mongoose.Schema({
     default: Date.now(),
   },
   image: String,
+  subscribed: [{
+    type: mongoose.Schema.ObjectId,
+    ref: 'User',
+  }],
   comments: [
     {
       commenter: {
         type: mongoose.Schema.ObjectId,
         ref: 'User',
-        required: [true, 'A like must belong to a user'],
+        required: [true, 'A comment must belong to a user'],
       },
       content: String,
       originalContent: String,
@@ -50,20 +54,6 @@ const storySchema = new mongoose.Schema({
       }
     },
   ],
-  report: {
-    isReported: Boolean,
-    reportDetails: [
-      {
-        reportedReason: String,
-        reportedAt: Date,
-        reportedBy: {
-            type: mongoose.Schema.ObjectId,
-            ref: 'User',
-            required: [true, 'A report must reference the user who reports it ']
-          },
-      },
-    ],
-  },
   status: {
     type: String,
     enum: ['deleted', 'draft', 'visible'],

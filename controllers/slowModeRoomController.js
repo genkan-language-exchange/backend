@@ -1,4 +1,4 @@
-const SlowModeRoom = require('../models/slowModeRoomModel');
+// const SlowModeRoom = require('../models/slowModeRoomModel');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
 

@@ -1,6 +1,6 @@
-const mongoose = require('mongoose');
+const mongoose = require('mongoose')
 
-const slowModeRoomSchema = new mongoose.Schema({
+const chatroomSchema = new mongoose.Schema({
   members: [
     {
       type: mongoose.Schema.ObjectId,
@@ -31,25 +31,18 @@ const slowModeRoomSchema = new mongoose.Schema({
           type: Boolean,
           default: false,
         },
-        report: {
-          isReported: {
-            type: Boolean,
-            default: false,
-          },
-          reportedReason: String,
-          reportedAt: Date,
-        },
       }, // end of readReceipt
     },
   ], // end of messages
-  },
-  { // options
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true },
-  }
-);
+},
+{
+  discriminatorKey: 'type',
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true },
+}
+)
 
-slowModeRoomSchema.pre(/^find/, function(next) {
+chatroomSchema.pre(/^find/, function(next) {
   this.populate([
     {
       path: 'members',
@@ -59,13 +52,6 @@ slowModeRoomSchema.pre(/^find/, function(next) {
   next();
 });
 
-slowModeRoomSchema.pre('save', function(next) {
-  const d = new Date();
-  const openableAt = d.setTime(d.getTime() + (1000 * 60 * 60 * 24))
-  this.readReceipt.openableAt = openableAt;
-  next();
-});
+const Chatroom = mongoose.model('Chatroom', chatroomSchema)
 
-const SlowModeRoom = mongoose.model('SlowModeRoom', slowModeRoomSchema);
-
-module.exports = SlowModeRoom;
+module.exports = Chatroom

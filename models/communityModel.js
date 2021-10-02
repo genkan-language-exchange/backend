@@ -41,10 +41,6 @@ const communitySchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  private: {
-    type: Boolean,
-    default: false,
-  },
   members: [
     {
       user: {

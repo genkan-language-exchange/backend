@@ -11,9 +11,9 @@ const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
 
 const userRouter = require('./routes/userRoutes');
-const slowModeRoomRouter = require('./routes/slowModeRoomRoutes');
 const storyRouter = require('./routes/storyRoutes');
 const lessonRouter = require('./routes/lessonRoutes');
+const notificationRouter = require('./routes/notificationsRoutes')
 
 const app = express();
 
@@ -64,10 +64,9 @@ app.use((req, _, next) => {
 
 // routes
 app.use('/api/v1/users', userRouter);
-app.use('/api/v1/sm-room', slowModeRoomRouter);
-// app.use('/api/v1/rt-room', roomRouter);
 app.use('/api/v1/stories', storyRouter);
 app.use('/api/v1/lessons', lessonRouter);
+app.use('/api/v1/notifications', notificationRouter);
 
 app.get('/', (req, res) => {
   res.status(200)
