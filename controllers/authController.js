@@ -2,6 +2,7 @@ const { promisify } = require('util');
 const crypto = require('crypto');
 const moment = require('moment');
 const jwt = require('jsonwebtoken');
+const gravatar = require('gravatar');
 
 const sendEmail = require('../utils/email');
 const AppError = require('../utils/appError');
@@ -76,11 +77,12 @@ exports.signup = catchAsync(async (req, res, next) => {
     name,
     email,
     identifier,
+    gravatar: gravatar.url(user.email),
     password: req.body.password,
     passwordConfirm: req.body.passwordConfirm,
     matchSettings: req.body.matchSettings,
     validationToken,
-    validationExpires: Date.now() + (30 * 60 * 1000),
+    validationExpires: Date.now() + (1000 * 60 * 60 * 24),
   });
 
   // send account validation email
@@ -137,6 +139,7 @@ exports.login = catchAsync(async (req, res, next) => {
     message: 'Be sure to provide both an email and password'
   });
 
+  user.gravatar = gravatar.url(email)
   user.matchSettings.lastSeen = Date.now();
   await user.save({ validateBeforeSave: false });
 

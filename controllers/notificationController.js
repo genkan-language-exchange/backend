@@ -60,7 +60,6 @@ exports.aliasGetUserNotifications = catchAsync(async (req, _, next) => {
   req.query = {
     ...req.query,
     for: { $eq: req.user._id },
-    read: { $eq: false },
     sort: 'createdAt',
   }
   next()
@@ -79,19 +78,20 @@ exports.markNotificationRead = catchAsync(async (req, res, next) => {
   const notification = await Notification.findById(id)
   if (!notification) return next(new AppError('Notification not found!', 404))
 
-  notification.read = true
+  notification.read = !notification.read
   notification.save()
 
   res.status(200).json({
-    success: true
+    success: true,
+    notification
   })
 })
 
 exports.deleteNotification = catchAsync(async (req, res, next) => {
   const { id } = req.params
-  Notification.findByIdAndDelete(id)
+  await Notification.findByIdAndDelete(id)
 
-  res.status(204).json({
+  res.status(200).json({
     success: true
   })
 })

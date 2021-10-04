@@ -1,4 +1,3 @@
-const gravatar = require('gravatar')
 const User = require('../models/userModel');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
@@ -42,19 +41,9 @@ exports.getUser = catchAsync(async (req, res, next) => {
   if (!user || user?.accountStatus === 'inactive') return next(new AppError('User not found', 404));
   if (user.accountStatus === 'banned') return next(new AppError('User is banned', 404));
 
-  let gUrl = ""
-  if (!req.query.self) {
-    gUrl = gravatar.url(user[0].email)
-    user[0].email = undefined
-  } else {
-    gUrl = gravatar.url(user.email)
-    user.email = undefined
-  }
-
   res.status(200).json({
     status: 'success',
     data: user,
-    gravatar: gUrl,
   });
 });
 
@@ -69,7 +58,7 @@ exports.aliasGetAllUsers = catchAsync(async (req, _, next) => {
     ],
     limit: '25',
     sort: '-matchSettings.lastSeen',
-    fields: 'name,identifier,matchSettings,role'
+    fields: 'name,identifier,matchSettings,role,gravatar'
   }
   next();
 });
@@ -83,11 +72,11 @@ exports.aliasGetNew = catchAsync(async (req, _, next) => {
     $and: [
       { _id: { $ne: req.user._id }},
       { accountStatus: { $eq: "verified" } },
-      { "matchSettings.accountCreated": { gte: threeDaysAgo } }
+      { "matchSettings.accountCreated": { gte: threeDaysAgo } },
     ],
     limit: '25',
     sort: '-matchSettings.accountCreated',
-    fields: 'name,identifier,matchSettings,role'
+    fields: 'name,identifier,matchSettings,role,gravatar'
   }
   next();
 });
@@ -105,7 +94,7 @@ exports.aliasGetOnline = catchAsync(async (req, _, next) => {
     ],
     limit: '25',
     sort: '-matchSettings.lastSeen',
-    fields: 'name,identifier,matchSettings,role'
+    fields: 'name,identifier,matchSettings,role,gravatar'
   }
   next();
 });

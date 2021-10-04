@@ -20,7 +20,8 @@ const userSchema = new mongoose.Schema({
   identifier: {
     type: String,
   },
-  photo: String,
+  avatar: String,
+  gravatar: String,
   password: {
     type: String,
     required: true,

@@ -13,9 +13,11 @@ const TranslationWidget = require('../models/lesson/widgets/translationWidget')
 exports.getPublished = (req, _, next) => {
   req.query = {
     ...req.query,
-    status: { $eq: "published" },
-    language: { $eq: req.query.language },
-    type: { $eq: req.query.type },
+    $and: [
+      { status: { $eq: "published" } } ,
+      { language: { $eq: req.query.language } },
+      { type: { $eq: req.query.type } },
+    ],
     limit: '25',
     sort: 'updatedAt',
   };
@@ -25,10 +27,12 @@ exports.getPublished = (req, _, next) => {
 exports.getByUser = (req, _, next) => {
   req.query = {
     ...req.query,
-    status: { $ne: "deleted" },
+    $and: [
+      { status: { $ne: "deleted" } },
+      { language: { $eq: req.query.language } },
+      { teacher: { $eq: req.user._id} },
+    ],
     sort: 'createdAt',
-    language: { $eq: req.query.language },
-    teacher: { $eq: req.user._id},
   };
   next();
 };

@@ -69,15 +69,15 @@ storySchema.pre(/^find/, function(next) {
   this.populate([
     {
       path: 'userId',
-      select: 'name identifier _id matchSettings accountStatus active role'
+      select: 'name identifier _id matchSettings accountStatus active role gravatar'
     },
     {
       path: 'comments.commenter',
-      select: 'name identifier _id matchSettings accountStatus active role'
+      select: 'name identifier _id matchSettings accountStatus active role gravatar'
     },
     {
       path: 'likes.likeUser',
-      select: 'name identifier _id matchSettings accountStatus active role'
+      select: 'name identifier _id matchSettings accountStatus active role gravatar'
     },
   ]);
   next();
