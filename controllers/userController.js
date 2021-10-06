@@ -1,6 +1,7 @@
 const User = require('../models/userModel');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
+const APIFeatures = require('../utils/apiFeatures');
 const factory = require('./factory');
 
 const filterBody = (obj, ...allowedFields) => {
@@ -47,7 +48,71 @@ exports.getUser = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.getAllUsers = factory.getAll(User)
+exports.getAllUsers = catchAsync(async(req, res) => {
+  let { language, minLevel = 0, matchAny = false, page = 1, limit = 25 } = req.query
+  
+  if (language == undefined) {
+    matchAny = true
+  }
+
+  try {
+    // TODO:
+    // send matchAny as POST option
+    // send individual languages as POST option
+    const userDocs = await User.aggregate([
+      {
+        $match: {
+          $and: [
+            { _id: { $ne: req.user._id }},
+            { active: { $eq: true } },
+            { accountStatus: { $eq: 'verified' } },
+            { 'matchSettings.age': { $gte: req.user.filterSettings.allowMatchAges[0] } },
+            { 'matchSettings.age': { $lte: req.user.filterSettings.allowMatchAges[1] } },
+          ],
+          $or: [
+            { 'filterSettings.matchAny': { $eq: matchAny } },
+            { $and: [{ 'matchSettings.languageKnow1': { $eq: language }}, { 'matchSettings.languageKnow1Level': { $gte: minLevel }},] },
+            { $and: [{ 'matchSettings.languageKnow2': { $eq: language }}, { 'matchSettings.languageKnow2Level': { $gte: minLevel }},] },
+            { $and: [{ 'matchSettings.languageKnow3': { $eq: language }}, { 'matchSettings.languageKnow3Level': { $gte: minLevel }},] },
+            // { 'matchSettings.languageKnow2': {
+            //   $in: [
+            //     req.user.matchSettings.languageLearn1,
+            //     req.user.matchSettings.languageLearn2 != undefined && req.user.matchSettings.languageLearn2,
+            //     req.user.matchSettings.languageLearn3 != undefined && req.user.matchSettings.languageLearn3
+            //   ]
+            // }},
+            // { 'matchSettings.languageKnow3': {
+            //   $in: [
+            //     req.user.matchSettings.languageLearn1,
+            //     req.user.matchSettings.languageLearn2 != undefined && req.user.matchSettings.languageLearn2,
+            //     req.user.matchSettings.languageLearn3 != undefined && req.user.matchSettings.languageLearn3
+            //   ]
+            // }},
+          ]
+        },
+      },
+      {
+        $unset: ['_id','filterSettings','profile','accountStatus','email','identifier','password','passwordChangedAt','matchSettings.birthday']
+      },
+      {
+        $facet: {
+          metadata: [ { $count: "total" }, { $addFields: { page } } ],
+          data: [ { $skip: (page - 1) * limit }, { $limit: parseInt(limit) } ]
+        }
+      },
+    ])
+  
+    res.status(200).json({
+      status: 'success',
+      results: userDocs[0].metadata[0].total,
+      data: userDocs[0].data
+    })
+    
+  } catch (err) {
+    console.log(err)
+    res.status(500)
+  }
+})
 
 exports.aliasGetAllUsers = catchAsync(async (req, _, next) => {
   req.query = {
@@ -68,15 +133,9 @@ exports.aliasGetNew = catchAsync(async (req, _, next) => {
   const threeDaysAgo = new Date(Date.now() - threeDays)
   
   req.query = {
-    ...req.query,
-    $and: [
-      { _id: { $ne: req.user._id }},
-      { accountStatus: { $eq: "verified" } },
-      { "matchSettings.accountCreated": { gte: threeDaysAgo } },
-    ],
-    limit: '25',
+    ...req.query,  
+    "matchSettings.accountCreated": { gte: threeDaysAgo },
     sort: '-matchSettings.accountCreated',
-    fields: 'name,identifier,matchSettings,role,gravatar'
   }
   next();
 });
@@ -87,14 +146,8 @@ exports.aliasGetOnline = catchAsync(async (req, _, next) => {
 
   req.query = {
     ...req.query,
-    $and: [
-      { _id: { $ne: req.user._id }},
-      { accountStatus: { $eq: "verified" } },
-      { "matchSettings.lastSeen": { gte: halfHourAgo } }
-    ],
-    limit: '25',
+    "matchSettings.lastSeen": { gte: halfHourAgo },
     sort: '-matchSettings.lastSeen',
-    fields: 'name,identifier,matchSettings,role,gravatar'
   }
   next();
 });

@@ -77,7 +77,7 @@ exports.signup = catchAsync(async (req, res, next) => {
     name,
     email,
     identifier,
-    gravatar: gravatar.url(user.email),
+    gravatar: gravatar.url(email),
     password: req.body.password,
     passwordConfirm: req.body.passwordConfirm,
     matchSettings: req.body.matchSettings,
@@ -105,7 +105,7 @@ exports.signup = catchAsync(async (req, res, next) => {
     return next(new AppError('Could not send verification email', 500));
   }
 
-  Notification.create({
+  const signUpNotification = await Notification.create({
     for: newUser._id,
     title: `Welcome to Genkan, ${newUser.name}!`,
     content: "You'll need to verify your account before you can interact with other users!\nCheck the inbox of the email address you registered with.",
@@ -113,7 +113,8 @@ exports.signup = catchAsync(async (req, res, next) => {
     createdAt: Date.now(),
     shouldClean: true,
     cleanAt: Date.now() + (1000 * 60 * 60 * 24 * 7)
-   })
+  })
+  signUpNotification.save()
 
   createSendToken(newUser, 201, res);
 });

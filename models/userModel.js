@@ -54,71 +54,85 @@ const userSchema = new mongoose.Schema({
     default: 'user',
   },
   profile: {
-    about: {
-      type: String,
-    },
-    interests: {
-      type: Array,
-    },
-    languageGoal: {
-      type: String,
-    },
+    about: String,
+    interests: Array,
   },
   matchSettings: { // user's own information
-    accountCreated: { // user can block new accounts made within up to 1 month from sending message
-      type: Date,
-      default: Date.now(),
+    accountCreated: Date, // user can block new accounts made within up to 1 month from sending message
+    lastSeen: Date,
+    age: {
+      type: Number,
+      min: 16,  // allow 16 but only show to under 18
+      max: 150,
     },
-    lastSeen: {
-      type: Date,
-      default: Date.now(),
-    },
-    age: Number, // allow 16 but only show to under 18
     birthday: Date, // for age verification
     gender: {
       type: String,
       enum: ['male', 'female', 'non-binary'],
     },
-    allowedGenders: { // user can block genders
-      type: Array,
-      default: ['male', 'female', 'non-binary'],
-    },
     nationality: String,
     residence: String,
-    languageKnow: [
-      {
-        language: String,
-        level: Number,
-      }
-    ],
-    languageLearn: [
-      {
-        language: String,
-        level: Number,
-      }
-    ],
+    languageKnow1: String,
+    languageKnow2: String,
+    languageKnow3: String,
+    languageKnow1Level: {
+      type: Number,
+      min: 0,
+      max: 3,
+    },
+    languageKnow2Level: {
+      type: Number,
+      min: 0,
+      max: 3,
+    },
+    languageKnow3Level: {
+      type: Number,
+      min: 0,
+      max: 3,
+    },
+    languageLearn1: String,
+    languageLearn2: String,
+    languageLearn3: String,
+    languageLearn1Level: {
+      type: Number,
+      min: 0,
+      max: 3,
+    },
+    languageLearn2Level: {
+      type: Number,
+      min: 0,
+      max: 3,
+    },
+    languageLearn3Level: {
+      type: Number,
+      min: 0,
+      max: 3,
+    },
   },
   filterSettings: { // the type of study partner the user wants to find
-    ages: {
+    allowMatchAges: {
       type: Array,
       default: [18, 150],
       min: 16,
+      max: 150,
     },
-    genders: {
+    allowMatchGenders: { // user can block genders
       type: Array,
-      default: ['male', 'female', 'non-binary']
+      default: ['male', 'female', 'non-binary'],
     },
-    nationalities: Array,
-    resides: Array, // user can block people in same country as them
-    languagesKnow: Array, // user can block anyone who doesn't know their target language
-    languagesLearn: Array, // in the interest of allowing pure cultural exchange this can be empty
-    showOwnIdentifier: {
+    allowMatchNationalities: Array,
+    allowMatchResides: Array, // user can block people in same country as them
+    matchAny: {
       type: Boolean,
-      default: false,
+      default: true,
     },
     showOwnAge: {
       type: Boolean,
       default: true,
+    },
+    showOwnIdentifier: {
+      type: Boolean,
+      default: false,
     },
     showOnlineStatus: {
       type: Boolean,
@@ -128,18 +142,7 @@ const userSchema = new mongoose.Schema({
       type: Boolean,
       default: true,
     }
-  },
-  accountNotes: { // allow admin to add notes to account
-    type: String,
-  },
-  report: {
-    isReported: {
-      type: Boolean,
-      default: false,
-    },
-    reportedReason: String,
-    reportedAt: Date,
-  },
+  },  
   setInactiveDate: Date,
   passwordChangedAt: Date,
   passwordResetToken: String,
