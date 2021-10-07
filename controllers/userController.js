@@ -1,7 +1,6 @@
 const User = require('../models/userModel');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
-const APIFeatures = require('../utils/apiFeatures');
 const factory = require('./factory');
 
 const filterBody = (obj, ...allowedFields) => {
@@ -48,51 +47,51 @@ exports.getUser = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.getAllUsers = catchAsync(async(req, res) => {
-  let { language, minLevel = 0, matchAny = false, page = 1, limit = 25 } = req.query
+exports.getPotentialPartners = catchAsync(async(req, res) => {
+  let { language, minLevel = 0, matchAny = false, page = 1, limit = 25, partnerType = 'learn' } = req.query
   
-  if (language == undefined) {
-    matchAny = true
+  if (language == undefined) matchAny = true
+  
+  let filter
+  if (partnerType === 'learn') {
+    filter = [
+      { $and: [{ 'matchSettings.languageKnow1': { $eq: language }}, { 'matchSettings.languageKnow1Level': { $gte: minLevel }},] },
+      { $and: [{ 'matchSettings.languageKnow2': { $eq: language }}, { 'matchSettings.languageKnow2Level': { $gte: minLevel }},] },
+      { $and: [{ 'matchSettings.languageKnow3': { $eq: language }}, { 'matchSettings.languageKnow3Level': { $gte: minLevel }},] },
+    ]
+  } else if (partnerType === 'teach') {
+    filter = [
+      { $and: [{ 'matchSettings.languageLearn1': { $eq: language }}, { 'matchSettings.languageLearn1Level': { $gte: minLevel }},] },
+      { $and: [{ 'matchSettings.languageLearn2': { $eq: language }}, { 'matchSettings.languageLearn2Level': { $gte: minLevel }},] },
+      { $and: [{ 'matchSettings.languageLearn3': { $eq: language }}, { 'matchSettings.languageLearn3Level': { $gte: minLevel }},] },
+    ]
   }
+  filter.unshift({ 'filterSettings.matchAny': { $eq: matchAny } })
 
   try {
-    // TODO:
-    // send matchAny as POST option
-    // send individual languages as POST option
-    const userDocs = await User.aggregate([
+    let userDocs
+  
+    userDocs = await User.aggregate([
       {
         $match: {
           $and: [
             { _id: { $ne: req.user._id }},
             { active: { $eq: true } },
             { accountStatus: { $eq: 'verified' } },
-            { 'matchSettings.age': { $gte: req.user.filterSettings.allowMatchAges[0] } },
-            { 'matchSettings.age': { $lte: req.user.filterSettings.allowMatchAges[1] } },
+            { 'matchSettings.age': { $gte: req.user.filterSettings.allowMatchAges[0] } }, // min 18
+            { 'matchSettings.age': { $lte: req.user.filterSettings.allowMatchAges[1] } }, // max 150
+            { 'matchSettings.gender': { $in: req.user.filterSettings.allowMatchGenders } }, // doc matches user's own gender preferences
+            { 'filterSettings.allowMatchGenders': { $elemMatch: { $eq: req.user.matchSettings.gender } } }, // user's gender matches doc's preferences
+            // TODO: country preferences
           ],
-          $or: [
-            { 'filterSettings.matchAny': { $eq: matchAny } },
-            { $and: [{ 'matchSettings.languageKnow1': { $eq: language }}, { 'matchSettings.languageKnow1Level': { $gte: minLevel }},] },
-            { $and: [{ 'matchSettings.languageKnow2': { $eq: language }}, { 'matchSettings.languageKnow2Level': { $gte: minLevel }},] },
-            { $and: [{ 'matchSettings.languageKnow3': { $eq: language }}, { 'matchSettings.languageKnow3Level': { $gte: minLevel }},] },
-            // { 'matchSettings.languageKnow2': {
-            //   $in: [
-            //     req.user.matchSettings.languageLearn1,
-            //     req.user.matchSettings.languageLearn2 != undefined && req.user.matchSettings.languageLearn2,
-            //     req.user.matchSettings.languageLearn3 != undefined && req.user.matchSettings.languageLearn3
-            //   ]
-            // }},
-            // { 'matchSettings.languageKnow3': {
-            //   $in: [
-            //     req.user.matchSettings.languageLearn1,
-            //     req.user.matchSettings.languageLearn2 != undefined && req.user.matchSettings.languageLearn2,
-            //     req.user.matchSettings.languageLearn3 != undefined && req.user.matchSettings.languageLearn3
-            //   ]
-            // }},
-          ]
+          $or: filter
         },
       },
       {
-        $unset: ['_id','filterSettings','profile','accountStatus','email','identifier','password','passwordChangedAt','matchSettings.birthday']
+        $unset: ['filterSettings','profile','accountStatus','email','identifier','password','passwordChangedAt','matchSettings.birthday']
+      },
+      {
+        $sort: { 'matchSettings.lastSeen': -1 },
       },
       {
         $facet: {
@@ -104,7 +103,7 @@ exports.getAllUsers = catchAsync(async(req, res) => {
   
     res.status(200).json({
       status: 'success',
-      results: userDocs[0].metadata[0].total,
+      results: userDocs[0].metadata[0]?.total || 0,
       data: userDocs[0].data
     })
     
@@ -114,43 +113,43 @@ exports.getAllUsers = catchAsync(async(req, res) => {
   }
 })
 
-exports.aliasGetAllUsers = catchAsync(async (req, _, next) => {
-  req.query = {
-    ...req.query,
-    $and: [
-      { _id: { $ne: req.user._id }},
-      { accountStatus: { $eq: "verified" }},
-    ],
-    limit: '25',
-    sort: '-matchSettings.lastSeen',
-    fields: 'name,identifier,matchSettings,role,gravatar'
-  }
-  next();
-});
+// exports.aliasGetAllUsers = catchAsync(async (req, _, next) => {
+//   req.query = {
+//     ...req.query,
+//     $and: [
+//       { _id: { $ne: req.user._id }},
+//       { accountStatus: { $eq: "verified" }},
+//     ],
+//     limit: '25',
+//     sort: '-matchSettings.lastSeen',
+//     fields: 'name,identifier,matchSettings,role,gravatar'
+//   }
+//   next();
+// });
 
-exports.aliasGetNew = catchAsync(async (req, _, next) => {
-  const threeDays = 1000 * 60 * 60 * 24 * 3
-  const threeDaysAgo = new Date(Date.now() - threeDays)
+// exports.aliasGetNew = catchAsync(async (req, _, next) => {
+//   const threeDays = 1000 * 60 * 60 * 24 * 3
+//   const threeDaysAgo = new Date(Date.now() - threeDays)
   
-  req.query = {
-    ...req.query,  
-    "matchSettings.accountCreated": { gte: threeDaysAgo },
-    sort: '-matchSettings.accountCreated',
-  }
-  next();
-});
+//   req.query = {
+//     ...req.query,  
+//     "matchSettings.accountCreated": { gte: threeDaysAgo },
+//     sort: '-matchSettings.accountCreated',
+//   }
+//   next();
+// });
 
-exports.aliasGetOnline = catchAsync(async (req, _, next) => {
-  const thirtyMinutes = 1000 * 60 * 30
-  const halfHourAgo = new Date(Date.now() - thirtyMinutes)
+// exports.aliasGetOnline = catchAsync(async (req, _, next) => {
+//   const thirtyMinutes = 1000 * 60 * 30
+//   const halfHourAgo = new Date(Date.now() - thirtyMinutes)
 
-  req.query = {
-    ...req.query,
-    "matchSettings.lastSeen": { gte: halfHourAgo },
-    sort: '-matchSettings.lastSeen',
-  }
-  next();
-});
+//   req.query = {
+//     ...req.query,
+//     "matchSettings.lastSeen": { gte: halfHourAgo },
+//     sort: '-matchSettings.lastSeen',
+//   }
+//   next();
+// });
 
 exports.updateMe = async (req, res, next) => {
   // 1) create error if user POSTs password

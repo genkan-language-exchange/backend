@@ -1,5 +1,4 @@
 const Story = require('../models/storyModel');
-const User = require('../models/userModel');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
 const factory = require('./factory')

@@ -1,13 +1,8 @@
 const express = require('express');
-const multer = require('multer');
+const router = express.Router();
 
 const userController = require('./../controllers/userController');
 const authController = require('./../controllers/authController');
-const photoController = require('./../controllers/photoController');
-
-const upload = multer()
-
-const router = express.Router();
 
 router.post('/signup', authController.signup);
 router.post('/login', authController.login);
@@ -16,7 +11,6 @@ router.get('/logout', authController.logout);
 router.post('/forgotPassword', authController.forgottenPassword);
 router.get('/testResetPasswordToken/:token', authController.testResetPasswordToken);
 router.patch('/resetPassword/:token', authController.resetPassword);
-
 
 router.patch('/validation/:token', authController.verifyAccount);
 router.post('/revalidate', authController.resendValidationEmail);
@@ -27,7 +21,6 @@ router.post('/revalidate', authController.resendValidationEmail);
 
 router.use(authController.protect)
 router.get('/ping', userController.ping);
-router.post('/setAvatar', upload.single('userAvatar'), photoController.setAvatar);
 router.patch('/updatePassword', authController.updatePassword);
 router.patch('/updateMe', userController.updateMe);
 router.delete('/deleteMe', userController.deleteMe);
@@ -35,10 +28,10 @@ router.delete('/deleteMe', userController.deleteMe);
 router
   .route('/')
   .post(userController.getUser)
-  .get(userController.aliasGetAllUsers, userController.getAllUsers)
+  .get(userController.getPotentialPartners)
 
-router.route('/new').get(userController.aliasGetNew, userController.getAllUsers)
-router.route('/online').get(userController.aliasGetOnline, userController.getAllUsers)
+// router.route('/new').get(userController.aliasGetNew, userController.getAllUsers)
+// router.route('/online').get(userController.aliasGetOnline, userController.getAllUsers)
 // router.route('/custom').post(userController.getCustom)
 
 router
