@@ -16,6 +16,7 @@ router.patch('/global/:id', notificationController.markGlobalNotificationRead)
 
 // user notification routes
 router.get('/', notificationController.aliasGetUserNotifications, notificationController.cleanUpOldNotifications, notificationController.getNotifications)
+router.post('/', notificationController.createUserNotification)
 router.patch('/:id', notificationController.markNotificationRead)
 router.delete('/:id', notificationController.deleteNotification)
 

@@ -24,6 +24,8 @@ exports.ping = catchAsync(async (req, res) => {
 
 exports.getUser = catchAsync(async (req, res, next) => {
   let user;
+  console.log(req.body)
+
   if (req.params.id) {
     user = await User.findById(req.params.id).select('-__v -password');
   } else if (req.query.self) {
@@ -69,9 +71,7 @@ exports.getPotentialPartners = catchAsync(async(req, res) => {
   filter.unshift({ 'filterSettings.matchAny': { $eq: matchAny } })
 
   try {
-    let userDocs
-  
-    userDocs = await User.aggregate([
+    const userDocs = await User.aggregate([
       {
         $match: {
           $and: [
@@ -88,7 +88,7 @@ exports.getPotentialPartners = catchAsync(async(req, res) => {
         },
       },
       {
-        $unset: ['filterSettings','profile','accountStatus','email','identifier','password','passwordChangedAt','matchSettings.birthday']
+        $unset: ['filterSettings','profile','accountStatus','email','password','passwordChangedAt','matchSettings.birthday']
       },
       {
         $sort: { 'matchSettings.lastSeen': -1 },

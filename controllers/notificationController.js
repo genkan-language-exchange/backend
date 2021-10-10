@@ -2,6 +2,7 @@ const AppError = require('../utils/appError')
 const catchAsync = require('../utils/catchAsync')
 const factory = require('./factory')
 
+const User = require('../models/userModel')
 const Notification = require('../models/notifications/notificationsModel')
 const GlobalNotification = require('../models/notifications/globalNotificationsModel')
 
@@ -71,6 +72,43 @@ exports.cleanUpOldNotifications = catchAsync(async (req, _, next) => {
 })
 
 exports.getNotifications = factory.getAll(Notification)
+
+exports.createUserNotification = catchAsync(async (req, res, next) => {
+  const { name, identifier, title, content, shouldClean = false, cleanAfterDays = 7 } = req.body
+  let cleanAt
+  if (shouldClean) {
+    const d = new Date()
+    const expires = d.setTime(d.getTime() + (1000 * 60 * 60 * 24 * cleanAfterDays))
+    cleanAt = expires
+  }
+
+  try {
+    const user = await User.findOne({ name, identifier })
+
+    if (user != null || user != undefined) {
+      const notification = await Notification.create({ for: user._id, title, content, shouldClean })
+      if (shouldClean) notification.cleanAt = cleanAt
+
+      await notification.save()
+
+      res.status(201).json({
+        success: true,
+        notification
+      })
+    } else {
+      res.status(200).json({
+        success: false,
+        message: 'User not found'
+      })
+    }
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      success: false,
+      error
+    })
+  }
+})
 
 exports.markNotificationRead = catchAsync(async (req, res, next) => {
   const { id } = req.params

@@ -12,7 +12,7 @@ const globalNotificationSchema = new mongoose.Schema({
   status: {
     type: String,
     enum: ['deleted', 'draft', 'published'],
-    default: 'draft'
+    default: 'published'
   }
 },
 { // options
